@@ -98,11 +98,8 @@ def concise_html_list(list):
     return list_html
 
 
-def display_frayer_model(word_row, header_override=None, show_topics=False):
-    if header_override:
-        st.subheader(header_override)
-    else:
-        st.subheader(word_row["word"])
+def display_frayer_model(word_row, include_courses=False, show_topics=False):
+    st.subheader(word_row["word"])
     characteristics = json.loads(word_row["characteristics"])
     examples = json.loads(word_row["examples"])
     non_examples = json.loads(word_row["non_examples"])
@@ -120,6 +117,8 @@ def display_frayer_model(word_row, header_override=None, show_topics=False):
         st.markdown(concise_html_list(non_examples), unsafe_allow_html=True)
     if show_topics:
         st.divider()
+        if include_courses:
+            st.markdown(f"**Courses:** {include_courses}")
         topics = word_row["topics"]
         if topics:
             topics_list = topics.split(",")
@@ -146,8 +145,9 @@ def display_single_result(results):
     if courses:
         courses_list = courses.split(",")
         courses = ", ".join(courses_list)
-    header = f"{w['word']} ({courses})"
-    display_frayer_model(w, header_override=header, show_topics=True)
+    else:
+        courses = False
+    display_frayer_model(w, include_courses=courses, show_topics=True)
 
 
 def display_search_results(results, query):
