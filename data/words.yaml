@@ -109,20 +109,24 @@ subjects:
 
 words:
   - word: Register
-    definition: Small, fast CPU storage used to hold data temporarily.
+    definition: Small, fast CPU storage used temporarily store data.
     characteristics:
-      - hardware
-      - volatile
-      - extremely fast
+      - Stores a single memory address, instruction, or datum
+      - Used in the Fetch-Decode-Execute (FDE) cycle
+      - Volatile
     examples:
-      - MAR
-      - MDR
-      - Program counter
+      - Memory address register (MAR) 
+      - Memory data register (MDR)
+      - Program counter (PC)
+      - Accumulator (ACC)
+      - Current instruction register (CIR)
     non-examples:
-      - HDD
+      - Clock
+      - Cache
+      - Arithmetic logic unit (ALU)
     topics:
       - course: OCR J277
-        codes: [1.1.1, 1.1.2]
+        codes: [1.1.1]
       - course: OCR H446
         codes: [1.1.1]
 
