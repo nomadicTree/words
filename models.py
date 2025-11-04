@@ -2,6 +2,13 @@ import json
 import streamlit as st
 
 
+def concise_html_list(list):
+    list_html = f"""<ul style="margin:0; padding-left:20px;">
+        {''.join(f'<li>{i}</li>' for i in list)}
+    </ul>"""
+    return list_html
+
+
 class Word:
     def __init__(self, row):
         self.id = row["id"]
@@ -34,8 +41,6 @@ class Word:
         )
 
     def display_frayer(self, include_subject_info=False, show_topics=False):
-        from main import concise_html_list
-
         if include_subject_info:
             st.write(f"{", ".join(self.courses)}")
 
