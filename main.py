@@ -2,6 +2,8 @@ import streamlit as st
 import sqlite3
 import json
 
+from models import Word
+
 DB_FILE = "data/words.db"
 
 
@@ -22,23 +24,23 @@ def search_words(query):
                w.characteristics,
                w.examples,
                w.non_examples,
+               s.name AS subject_name,
                
                -- Distinct courses
-               (SELECT GROUP_CONCAT(course_name, ', ')
-                FROM (
-                    SELECT DISTINCT c.name AS course_name
-                    FROM WordTopic wt
-                    JOIN Topic t ON wt.topic_id = t.id
-                    JOIN Course c ON t.course_id = c.id
-                    WHERE wt.word_id = w.id
-                    ORDER BY c.name
-                )
+               (SELECT GROUP_CONCAT(DISTINCT c.name)
+                FROM WordTopic wt
+                JOIN Topic t ON wt.topic_id = t.id
+                JOIN Course c ON t.course_id = c.id
+                WHERE wt.word_id = w.id
+                ORDER BY c.name
                ) AS courses,
                
                -- Distinct topics in format: code: name (course), sorted by course then code
                (SELECT GROUP_CONCAT(topic_info, ', ')
                 FROM (
-                    SELECT DISTINCT t.code || ': ' || t.name || ' (' || c.name || ')' AS topic_info, c.name AS course_sort, t.code AS code_sort
+                    SELECT DISTINCT t.code || ': ' || t.name || ' (' || c.name || ')' AS topic_info,
+                           c.name AS course_sort,
+                           t.code AS code_sort
                     FROM WordTopic wt
                     JOIN Topic t ON wt.topic_id = t.id
                     JOIN Course c ON t.course_id = c.id
@@ -46,8 +48,8 @@ def search_words(query):
                     ORDER BY course_sort, code_sort
                 )
                ) AS topics
-               
         FROM Word w
+        LEFT JOIN Subject s ON w.subject_id = s.id
         WHERE w.word LIKE ?
         """,
         (f"%{query}%",),
@@ -91,75 +93,16 @@ def get_all_subjects_courses_topics():
     return results
 
 
-def concise_html_list(list):
-    list_html = f"""<ul style="margin:0; padding-left:20px;">
-        {''.join(f'<li>{i}</li>' for i in list)}
-    </ul>"""
-    return list_html
-
-
-def display_frayer_model(word_row, include_courses=False, show_topics=False):
-    word = word_row["word"]
-    definition = word_row["definition"]
-    characteristics = json.loads(word_row["characteristics"])
-    examples = json.loads(word_row["examples"])
-    non_examples = json.loads(word_row["non_examples"])
-
-    st.subheader(word)
-    frayer_html = f"""
-    <div class="frayer-grid">
-        <div class="frayer-cell">
-            <div class="frayer-title">Definition</div>
-            {definition}
-        </div>
-        <div class="frayer-cell">
-            <div class="frayer-title">Characteristics</div>
-            <ul>{"".join(f"<li>{c}</li>" for c in characteristics)}</ul>
-        </div>
-        <div class="frayer-cell">
-            <div class="frayer-title">Examples</div>
-            <ul>{"".join(f"<li>{e}</li>" for e in examples)}</ul>
-        </div>
-        <div class="frayer-cell">
-            <div class="frayer-title">Non-Examples</div>
-            <ul>{"".join(f"<li>{n}</li>" for n in non_examples)}</ul>
-        </div>
-    </div>
-    """
-    st.markdown(frayer_html, unsafe_allow_html=True)
-    if show_topics:
-        st.divider()
-        if include_courses:
-            st.markdown(f"**Courses:** {include_courses}")
-        topics = word_row["topics"]
-        if topics:
-            topics_list = topics.split(",")
-            st.markdown("**Topics:**")
-            st.markdown(concise_html_list(topics_list), unsafe_allow_html=True)
-            st.write("######")
-
-
 def display_multiple_results(results):
-    for w in results:
-        courses = w["courses"]
-        if courses:
-            courses_list = courses.split(",")
-            courses = ", ".join(courses_list)
-        else:
-            courses = ""
-        with st.expander(f"{w['word']} ({courses})", expanded=False):
-            display_frayer_model(w, show_topics=True)
+    for row in results:
+        w = Word(row)
+        with st.expander(f"{w.word} ({w.subject_name})", expanded=False):
+            w.display_frayer(show_topics=True)
 
 
 def display_single_result(results):
-    w = results[0]
-    courses = w["courses"]
-    if courses:
-        courses_list = courses.split(",")
-        courses = ", ".join(courses_list)
-    else:
-        courses = False
-    display_frayer_model(w, include_courses=courses, show_topics=True)
+    w = Word(results[0])
+    w.display_frayer(include_subject_info=True, show_topics=True)
 
 
 def display_search_results(results, query):
@@ -231,80 +174,48 @@ def main():
 
     with tab2:
         data = get_all_subjects_courses_topics()
-        subjects = sorted(set([row["subject"] for row in data]))
+        subjects = sorted(set(row["subject"] for row in data))
 
-        # Initialize session state if not set
-        if "selected_subject" not in st.session_state:
-            st.session_state.selected_subject = (
-                subjects[0] if subjects else None
-            )
-
+        # Subject selectbox with session state key
         subject = st.selectbox(
-            "Select subject",
-            subjects,
-            index=subjects.index(st.session_state.selected_subject),
+            "Select subject", subjects, key="selected_subject"
         )
-        st.session_state.selected_subject = subject
 
-        # Courses
+        # Courses based on current subject
         courses = sorted(
-            set([row["course"] for row in data if row["subject"] == subject])
+            set(row["course"] for row in data if row["subject"] == subject)
         )
-        if (
-            "selected_course" not in st.session_state
-            or st.session_state.selected_course not in courses
-        ):
-            st.session_state.selected_course = courses[0] if courses else None
+        course = st.selectbox("Select course", courses, key="selected_course")
 
-        course = st.selectbox(
-            "Select course",
-            courses,
-            index=(
-                courses.index(st.session_state.selected_course)
-                if st.session_state.selected_course in courses
-                else 0
-            ),
-        )
-        st.session_state.selected_course = course
-
-        # Topics
+        # Topics based on current subject + course
         topics = [
-            (row["topic_id"], f"{row['code']}: {row['topic_name']}")
+            {
+                "id": row["topic_id"],
+                "label": f"{row['code']}: {row['topic_name']}",
+            }
             for row in data
             if row["subject"] == subject and row["course"] == course
         ]
 
-        if "selected_topic_id" not in st.session_state:
-            st.session_state.selected_topic_id = (
-                topics[0][0] if topics else None
-            )
+        topic_ids = [t["id"] for t in topics]
+        topic_labels = {t["id"]: t["label"] for t in topics}
 
         topic_selection = st.selectbox(
             "Select topic",
-            topics,
-            index=(
-                next(
-                    (
-                        i
-                        for i, t in enumerate(topics)
-                        if t[0] == st.session_state.selected_topic_id
-                    ),
-                    0,
-                )
-                if topics
-                else 0
-            ),
-            format_func=lambda x: x[1],
+            topic_ids,
+            key="selected_topic_id",
+            format_func=lambda tid: topic_labels.get(tid, ""),
         )
-        st.session_state.selected_topic_id = topic_selection[0]
 
-        if topic_selection:
-            topic_id = topic_selection[0]
+        # Display words
+        if topic_selection is not None:
+            topic_id = topic_selection  # already an int
             words = get_words_by_topic(topic_id)
             if words:
                 for w in words:
-                    with st.expander(w["word"], expanded=False):
-                        display_frayer_model(w)
+                    word_obj = Word(w)
+                    with st.expander(word_obj.word, expanded=False):
+                        word_obj.display_frayer()
             else:
                 st.info("No words found for this topic.")
 
