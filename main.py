@@ -134,17 +134,9 @@ def display_multiple_results(results):
                 w.display_frayer(include_subject_info=True, show_topics=True)
 
 
-def display_single_result(results):
-    w = Word(results[0])
-    w.display_frayer(include_subject_info=True, show_topics=True)
-
-
 def display_search_results(results, query):
     if results:
-        if len(results) == 1:
-            display_single_result(results)
-        else:
-            display_multiple_results(results)
+        display_multiple_results(results)
     elif query:
         st.info("No results found.")
 
