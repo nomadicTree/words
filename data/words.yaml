@@ -141,11 +141,13 @@ words:
       - Intel i7
       - AMD Ryzen
     non-examples:
-      - GPU
-      - RAM
+      - Von Neumann
+      - Harvard
+      - CISC
+      - RISC
     topics:
       - course: OCR J277
-        codes: [1.1.1, 1.1.3]
+        codes: [1.1.1, 1.1.2]
       - course: OCR H446
         codes: [1.1.1, 1.1.2]
 
@@ -167,3 +169,40 @@ words:
         codes: [1.2.2]
       - course: OCR H446
         codes: [1.1.3]
+
+  - word: Concatentaion
+    definition: Combining strings together end-to-end into a single string.
+    characteristics:
+      - Combines two or more strings into one new string
+      - The order of the strings stays the same
+      - Uses the `+` operator in Python
+      - Does not automatically insert whitespace between combined strings
+    examples:
+      - '`"hello" + "world"` &rarr; `"helloworld"`'
+      - '`"hello " + "world"` &rarr; `"hello world"`'
+    non-examples:
+      - 'Printing values separated by commas: `print("hello", "world")`'
+      - 'F-strings: `f"hello {name}"`'
+    topics:
+      - course: OCR J277
+        codes: [2.2.3]
+
+  - word: Casting
+    definition: Converting a value from one data type to another.
+    characteristics:
+      - Changes the data type of a value (e.g., int to float, string to int)
+      - 'Common functions: `int()`, `float()`, `str()`, `bool()`'
+    examples:
+      - 'int to float: `float(5)` &rarr; `5.0`'
+      - 'float to int: `int(3.14)` &rarr; `3`'
+      - 'int to string: `str(5)` &rarr; `"5"`'
+      - 'string to float: `float("2.1")` &rarr; `2.1`'
+      - 'bool to string: `str(True)` &rarr; `"True"`'
+      - 'int to bool: `bool(0)` &rarr; `False`'
+      - 'int to bool: `bool(1)` &rarr; `True`'
+    non-examples:
+      - 'Assignment: `x = 5`'
+      - 'Concatentaion: `"hello " + "world"`'
+    topics:
+      - course: OCR J277
+        codes: [2.2.1]
