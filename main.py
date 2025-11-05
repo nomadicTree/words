@@ -166,84 +166,89 @@ def apply_styles():
     st.markdown(css, unsafe_allow_html=True)
 
 
+def search():
+    # Initialize session state for search
+    if "search_query" not in st.session_state:
+        st.session_state.search_query = ""
+    if "search_results" not in st.session_state:
+        st.session_state.search_results = []
+
+    # Search input
+    query = st.text_input(
+        "Search for a word",
+        value=st.session_state.search_query,
+        key="search_input",
+    )
+
+    # Perform search only if the query changed
+    if query != st.session_state.search_query:
+        st.session_state.search_query = query
+        if query:
+            st.session_state.search_results = search_words(query)
+        else:
+            st.session_state.search_results = []
+
+    # Display results
+    results = st.session_state.search_results
+    display_search_results(results, query)
+
+
+def glossary():
+    data = get_all_subjects_courses_topics()
+    subjects = sorted(set(row["subject"] for row in data))
+
+    # Subject selectbox with session state key
+    subject = st.selectbox("Select subject", subjects, key="selected_subject")
+
+    # Courses based on current subject
+    courses = sorted(
+        set(row["course"] for row in data if row["subject"] == subject)
+    )
+    course = st.selectbox("Select course", courses, key="selected_course")
+
+    # Topics based on current subject + course
+    topics = [
+        {
+            "id": row["topic_id"],
+            "label": f"{row['code']}: {row['topic_name']}",
+        }
+        for row in data
+        if row["subject"] == subject and row["course"] == course
+    ]
+
+    topic_ids = [t["id"] for t in topics]
+    topic_labels = {t["id"]: t["label"] for t in topics}
+
+    topic_selection = st.selectbox(
+        "Select topic",
+        topic_ids,
+        key="selected_topic_id",
+        format_func=lambda tid: topic_labels.get(tid, ""),
+    )
+
+    # Display words
+    if topic_selection is not None:
+        topic_id = topic_selection  # already an int
+        words = get_words_by_topic(topic_id)
+        if words:
+            for w in words:
+                word_obj = Word(w)
+                with st.expander(word_obj.word, expanded=False):
+                    word_obj.display_frayer()
+        else:
+            st.info("No words found for this topic.")
+
+
 def main():
 
     st.title("Frayer Dictionary")
     apply_styles()
     st.set_page_config(page_title="Frayer Dictionary")
-    tab1, tab2 = st.tabs(["Search", "By Topic"])
+    tab1, tab2 = st.tabs(["Search", "Glossary"])
     with tab1:
-        # Initialize session state for search
-        if "search_query" not in st.session_state:
-            st.session_state.search_query = ""
-        if "search_results" not in st.session_state:
-            st.session_state.search_results = []
-
-        # Search input
-        query = st.text_input(
-            "Search for a word",
-            value=st.session_state.search_query,
-            key="search_input",
-        )
-
-        # Perform search only if the query changed
-        if query != st.session_state.search_query:
-            st.session_state.search_query = query
-            if query:
-                st.session_state.search_results = search_words(query)
-            else:
-                st.session_state.search_results = []
-
-        # Display results
-        results = st.session_state.search_results
-        display_search_results(results, query)
-
+        search()
     with tab2:
-        data = get_all_subjects_courses_topics()
-        subjects = sorted(set(row["subject"] for row in data))
-
-        # Subject selectbox with session state key
-        subject = st.selectbox(
-            "Select subject", subjects, key="selected_subject"
-        )
-
-        # Courses based on current subject
-        courses = sorted(
-            set(row["course"] for row in data if row["subject"] == subject)
-        )
-        course = st.selectbox("Select course", courses, key="selected_course")
-
-        # Topics based on current subject + course
-        topics = [
-            {
-                "id": row["topic_id"],
-                "label": f"{row['code']}: {row['topic_name']}",
-            }
-            for row in data
-            if row["subject"] == subject and row["course"] == course
-        ]
-
-        topic_ids = [t["id"] for t in topics]
-        topic_labels = {t["id"]: t["label"] for t in topics}
-
-        topic_selection = st.selectbox(
-            "Select topic",
-            topic_ids,
-            key="selected_topic_id",
-            format_func=lambda tid: topic_labels.get(tid, ""),
-        )
-
-        # Display words
-        if topic_selection is not None:
-            topic_id = topic_selection  # already an int
-            words = get_words_by_topic(topic_id)
-            if words:
-                for w in words:
-                    word_obj = Word(w)
-                    with st.expander(word_obj.word, expanded=False):
-                        word_obj.display_frayer()
-            else:
-                st.info("No words found for this topic.")
+        glossary()
 
 
 if __name__ == "__main__":
