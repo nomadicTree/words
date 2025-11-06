@@ -6,7 +6,7 @@ from app_lib.repositories import (
 )
 
 st.title("Topic Index")
-st.set_page_config(page_title="Frayer Store")
+st.set_page_config(page_title="FrayerStore")
 
 # -----------------------------
 # Load data
