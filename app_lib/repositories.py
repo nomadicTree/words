@@ -4,7 +4,7 @@ from app_lib.db import get_db
 def search_words(query):
     query = query
     db = get_db()
-    q = "SELECT * FROM Word WHERE word LIKE ?"
+    q = "SELECT * FROM Word WHERE word LIKE ? ORDER BY Word.word"
     rows = db.execute(q, (f"%{query}%",)).fetchall()
     return rows
 
