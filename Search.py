@@ -27,20 +27,27 @@ def display_search_results(results, query):
 st.set_page_config(page_title="Frayer Store")
 st.title("Search")
 
-# Read current query safely from URL
-query = st.query_params.get("q", [""])[0]
+# Initialize session state for search
+if "search_query" not in st.session_state:
+    st.session_state.search_query = ""
+if "search_results" not in st.session_state:
+    st.session_state.search_results = []
 
-# Text input bound to local variable
-input_query = st.text_input(
-    "Search for a word", value=query, key="search_input"
+# Search input
+query = st.text_input(
+    "Search for a word",
+    value=st.session_state.search_query,
+    key="search_input",
 ).strip()
 
-# Update URL if input differs from URL
-if input_query != query:
-    st.query_params = {"q": [input_query]}  # triggers rerun
+# Perform search only if the query changed
+if query != st.session_state.search_query:
+    st.session_state.search_query = query
+    if query:
+        st.session_state.search_results = search_query(query)
+    else:
+        st.session_state.search_results = []
 
-# Run search using query from URL (after rerun)
-search_term = st.query_params.get("q", [""])[0]
-if search_term:
-    results = search_query(search_term)
-    display_search_results(results, search_term)
+# Display results
+results = st.session_state.search_results
+display_search_results(results, query)
