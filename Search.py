@@ -35,7 +35,7 @@ if "search_results" not in st.session_state:
 
 # Search input
 query = st.text_input(
-    "Search for a word",
+    "Search FrayerStore",
     value=st.session_state.search_query,
     key="search_input",
 ).strip()
