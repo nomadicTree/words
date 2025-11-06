@@ -6,7 +6,6 @@ def search_words(query):
     db = get_db()
     q = "SELECT * FROM Word WHERE word LIKE ?"
     rows = db.execute(q, (f"%{query}%",)).fetchall()
-    db.close()
     return rows
 
 
@@ -15,7 +14,6 @@ def get_subject_name(subject_id):
     q = "SELECT name FROM Subject WHERE id = ?"
     row = db.execute(q, (subject_id,)).fetchone()
     subject_name = row["name"] if row else None
-    db.close()
     return subject_name
 
 
@@ -33,7 +31,6 @@ def get_topics_for_word(word_id):
     ORDER BY Course.name, Topic.code
     """
     rows = db.execute(q, (word_id,)).fetchall()
-    db.close()
     return rows
 
 
@@ -51,7 +48,6 @@ def get_all_subjects_courses_topics():
     ORDER BY Subject.name, Course.name, Topic.code
     """
     rows = db.execute(q).fetchall()
-    db.close()
     return rows
 
 
@@ -64,5 +60,4 @@ def get_words_by_topic(topic_id):
         WHERE WordTopic.topic_id = ?
     """
     rows = db.execute(q, (topic_id,)).fetchall()
-    db.close()
     return rows
