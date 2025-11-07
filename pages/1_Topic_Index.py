@@ -4,80 +4,70 @@ from app_lib.repositories import (
     get_all_subjects_courses_topics,
     get_words_by_topic,
 )
-
-PAGE_TITLE = "Topic Index"
-st.title(PAGE_TITLE)
-st.set_page_config(page_title=f"FrayerStore | {PAGE_TITLE}", page_icon="🔎")
+from app_lib.selection_helpers import select_subject, select_course
 
 
-# -----------------------------
-# Load data
-# -----------------------------
-data = get_all_subjects_courses_topics()
+def get_topics_with_words(data, subject, course):
+    topics_with_words = []
+    for row in data:
+        if row["subject"] == subject and row["course"] == course:
+            topic_id = row["topic_id"]
+            words = get_words_by_topic(topic_id)
+            if words:  # Only include topics with words
+                topics_with_words.append(
+                    {
+                        "id": topic_id,
+                        "label": f"{row['code']}: {row['topic_name']}",
+                        "words": words,
+                    }
+                )
 
-# -----------------------------
-# Subjects
-# -----------------------------
-subjects = sorted(set(row["subject"] for row in data))
-if not subjects:
-    st.info("No subjects available.")
-    st.stop()
+    if not topics_with_words:
+        st.info("No words for this course.")
+        st.stop()
 
-subject = st.selectbox("Select subject", subjects)
+    return topics_with_words
 
-# -----------------------------
-# Courses
-# -----------------------------
-courses = sorted(
-    set(row["course"] for row in data if row["subject"] == subject)
-)
-if not courses:
-    st.info("No courses for this subject.")
-    st.stop()
 
-course = st.selectbox("Select course", courses)
+def display_sidebar_navigation(topics):
+    for topic in topics:
+        st.sidebar.markdown(
+            f"- [{topic['label']}](#topic-{topic['id']})",
+            unsafe_allow_html=True,
+        )
 
-# -----------------------------
-# Topics with words
-# -----------------------------
-topics_with_words = []
-for row in data:
-    if row["subject"] == subject and row["course"] == course:
-        topic_id = row["topic_id"]
-        words = get_words_by_topic(topic_id)
-        if words:  # only include topics with words
-            topics_with_words.append(
-                {
-                    "id": topic_id,
-                    "label": f"{row['code']}: {row['topic_name']}",
-                    "words": words,
-                }
-            )
 
-if not topics_with_words:
-    st.info("No words for this course.")
-    st.stop()
+def display_topics_and_words(topics):
+    for topic in topics:
+        st.markdown(
+            f"<a id='topic-{topic['id']}'></a>", unsafe_allow_html=True
+        )
+        st.subheader(topic["label"])
+        for w in topic["words"]:
+            word_obj = Word(w)
+            with st.expander(word_obj.word, expanded=False):
+                word_obj.display_frayer()
 
-# -----------------------------
-# Sidebar navigation links
-# -----------------------------
-for topic in topics_with_words:
-    st.sidebar.markdown(
-        f"- [{topic['label']}](#topic-{topic['id']})", unsafe_allow_html=True
+
+# ----------------------------
+# Main Page Logic
+# ----------------------------
+def main():
+    PAGE_TITLE = "Topic Index"
+    st.set_page_config(
+        page_title=f"FrayerStore | {PAGE_TITLE}", page_icon="🔎"
     )
+    st.title(PAGE_TITLE)
 
-# -----------------------------
-# Display topics and words
-# -----------------------------
-for topic in topics_with_words:
-    topic_id = topic["id"]
-    topic_label = topic["label"]
+    data = get_all_subjects_courses_topics()
 
-    # Anchor for navigation
-    st.markdown(f"<a id='topic-{topic_id}'></a>", unsafe_allow_html=True)
-    st.subheader(topic_label)
+    subject = select_subject(data)
+    course = select_course(data, subject)
 
-    for w in topic["words"]:
-        word_obj = Word(w)
-        with st.expander(word_obj.word, expanded=False):
-            word_obj.display_frayer()
+    topics_with_words = get_topics_with_words(data, subject, course)
+    display_sidebar_navigation(topics_with_words)
+    display_topics_and_words(topics_with_words)
+
+
+if __name__ == "__main__":
+    main()

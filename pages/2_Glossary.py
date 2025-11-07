@@ -4,57 +4,47 @@ from app_lib.repositories import (
     get_all_subjects_courses_topics,
     get_words_by_topic,
 )
+from app_lib.selection_helpers import select_subject, select_course
 
-PAGE_TITLE = "Glossary"
-st.title(PAGE_TITLE)
-st.set_page_config(page_title=f"FrayerStore | {PAGE_TITLE}", page_icon="🔎")
 
-data = get_all_subjects_courses_topics()
+def get_words_for_course(data, subject, course):
+    all_words = []
+    all_words_set = set()
+    for row in data:
+        if row["subject"] == subject and row["course"] == course:
+            topic_id = row["topic_id"]
+            for w in get_words_by_topic(topic_id) or []:
+                if w["word"] not in all_words_set:
+                    all_words_set.add(w["word"])
+                    all_words.append(Word(w))
+    if not all_words:
+        st.info("No words available for this course.")
+        st.stop()
+    return sorted(all_words, key=lambda w: w.word.lower())
 
-# -----------------------------
-# Subjects
-# -----------------------------
-subjects = sorted(set(row["subject"] for row in data))
-if not subjects:
-    st.info("No subjects available.")
-    st.stop()
 
-subject = st.selectbox("Select subject", subjects)
+def display_words(words):
+    for w in words:
+        with st.expander(w.word, expanded=False):
+            w.display_frayer(show_topics=True)
 
-# -----------------------------
-# Courses
-# -----------------------------
-courses = sorted(
-    set(row["course"] for row in data if row["subject"] == subject)
-)
-if not courses:
-    st.info("No courses for this subject.")
-    st.stop()
 
-course = st.selectbox("Select course", courses)
+# ----------------------------
+# Main page logic
+# ----------------------------
+def main():
+    PAGE_TITLE = "Glossary"
+    st.set_page_config(
+        page_title=f"FrayerStore | {PAGE_TITLE}", page_icon="🔎"
+    )
+    st.title(PAGE_TITLE)
 
-# -----------------------------
-# Collect all words for the course
-# -----------------------------
-all_words = []
-all_words_set = set()
-for row in data:
-    if row["subject"] == subject and row["course"] == course:
-        topic_id = row["topic_id"]
-        for w in get_words_by_topic(topic_id) or []:
-            if w["word"] not in all_words_set:  # use word string as key
-                all_words_set.add(w["word"])
-                all_words.append(Word(w))
+    data = get_all_subjects_courses_topics()
+    subject = select_subject(data)
+    course = select_course(data, subject)
+    words = get_words_for_course(data, subject, course)
+    display_words(words)
 
-if not all_words:
-    st.info("No words available for this course.")
-    st.stop()
 
-all_words = sorted(all_words, key=lambda w: w.word.lower())
-
-# -----------------------------
-# Display all words
-# -----------------------------
-for w in all_words:
-    with st.expander(w.word, expanded=False):
-        w.display_frayer(show_topics=True)
+if __name__ == "__main__":
+    main()
