@@ -43,6 +43,7 @@ query = st.text_input(
     value=st.session_state.search_query,
     key="search_input",
 ).strip()
+st.divider()
 
 # Perform search only if the query changed
 if query != st.session_state.search_query:
