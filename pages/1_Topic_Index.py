@@ -5,8 +5,10 @@ from app_lib.repositories import (
     get_words_by_topic,
 )
 
-st.title("Topic Index")
-st.set_page_config(page_title="FrayerStore | Topic Index", page_icon="️🔎")
+PAGE_TITLE = "Topic Index"
+st.title(PAGE_TITLE)
+st.set_page_config(page_title=f"FrayerStore | {PAGE_TITLE}", page_icon="🔎")
+
 
 # -----------------------------
 # Load data

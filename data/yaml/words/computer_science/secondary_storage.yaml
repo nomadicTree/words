@@ -1,0 +1,22 @@
+word: Secondary storage
+definition: >
+  Non-volatile, long-term storage for programs and data.
+characteristics:
+  - Non-volatile
+  - High capacity
+  - Slower than primary storage
+examples:
+  - Hard disk drive (HDD)
+  - Solid state drive (SSD)
+  - USB flash drive
+  - Optical drive (inlcuding CDs and DVDs)
+  - SD card
+non-examples:
+  - Registers
+  - Cache
+  - RAM
+topics:
+  - course: OCR J277
+    codes: [1.2.2]
+  - course: OCR H446
+    codes: [1.1.3]

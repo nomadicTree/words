@@ -1,0 +1,17 @@
+word: Programming construct
+definition: >
+  Fundamental building block used to create programs.
+characteristics:
+  - Often controls the flow of program execution
+examples:
+  - Sequence
+  - Selection
+  - Iteration
+non-examples:
+  - If/else statements
+  - Loops (for, while, do/while)
+  - Subprograms
+  - Variables
+topics:
+  - course: OCR J277
+    codes: [2.2.1]

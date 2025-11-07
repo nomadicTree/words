@@ -1,0 +1,20 @@
+word: Casting
+definition: >
+  Converting a value from one data type to another.
+characteristics:
+  - Changes the data type of a value (e.g., int to float, string to int)
+  - 'Common functions: `int()`, `float()`, `str()`, `bool()`'
+examples:
+  - 'int to float: `float(5)` &rarr; `5.0`'
+  - 'float to int: `int(3.14)` &rarr; `3`'
+  - 'int to string: `str(5)` &rarr; `"5"`'
+  - 'string to float: `float("2.1")` &rarr; `2.1`'
+  - 'bool to string: `str(True)` &rarr; `"True"`'
+  - 'int to bool: `bool(0)` &rarr; `False`'
+  - 'int to bool: `bool(1)` &rarr; `True`'
+non-examples:
+  - 'Assignment: `x = 5`'
+  - 'Concatenation: `"hello " + "world"`'
+topics:
+  - course: OCR J277
+    codes: [2.2.1]

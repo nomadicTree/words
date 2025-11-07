@@ -1,0 +1,19 @@
+word: Variable
+definition: >
+  A named location in memory whose value can change while the program is running.
+characteristics:
+  - Has an identifier
+  - Value can be updated using the `=` assignment operator
+  - 'Declared: an identifier is given and memory reserved'
+  - 'Initialised: given an initial value at the point of declaration or later'
+  - Depending on the programming language, the data type of its value may be changeable
+examples:
+  - '`name = "John"`' 
+  - '`age = 16`'
+  - '`name = input("What is your name?")`'
+  - '`length = len(names)`'
+non-examples:
+  - Constants (`const x = 5`, `AGE = 5`)
+topics:
+  - course: OCR J277
+    codes: [2.2.1]

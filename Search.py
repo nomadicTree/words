@@ -3,6 +3,9 @@ from app_lib.models import Word
 from app_lib.repositories import search_words
 
 
+PAGE_TITLE = "Search"
+
+
 def search_query(query):
     word_rows = search_words(query)
     words = []
@@ -26,8 +29,9 @@ def display_search_results(results, query):
         st.info("No results found.")
 
 
-st.set_page_config(page_title="FrayerStore", page_icon="🔎")
-st.title("Search")
+st.title(PAGE_TITLE)
+st.set_page_config(page_title=f"FrayerStore", page_icon="🔎")
+
 
 # Initialize session state for search
 if "search_query" not in st.session_state:

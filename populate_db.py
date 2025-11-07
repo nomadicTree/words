@@ -1,18 +1,20 @@
 import os
 import sqlite3
 import json
-import yaml
 import shutil
+import glob
 from datetime import datetime
+import yaml
 
 DB_FILE = "data/words.db"
 SCHEMA_FILE = "data/schema.sql"
-YAML_FILE = "data/words.yaml"
+TAXONOMY_FILE = "data/yaml/taxonomy.yaml"
+WORDS_DIR = "data/yaml/words"
 BACKUP_DIR = "data/backups"
 
 
 # -------------------------------
-# Helper Functions (from before)
+# Helper Functions
 # -------------------------------
 def get_or_create_subject(cursor, name):
     cursor.execute("SELECT id FROM Subject WHERE name=?", (name,))
@@ -66,7 +68,6 @@ def get_or_create_word(cursor, word_data, subject_id):
 
     if res:
         word_id = res[0]
-        # Update definition/fields if needed
         cursor.execute(
             """
             UPDATE Word SET
@@ -127,50 +128,41 @@ def create_db_if_not_exists(db_path, schema_path):
 
 def backup_db(db_path):
     os.makedirs(BACKUP_DIR, exist_ok=True)
-
-    # Current timestamp in YYYYMMDD_HHMMSS format
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-
-    # Extract the base name of the DB file (e.g., 'words.db')
     base_name = os.path.basename(db_path)
-
-    # Construct backup filename: words.db_YYYYMMDD_HHMMSS.bak
     backup_filename = f"{base_name}_{timestamp}.bak"
     backup_path = os.path.join(BACKUP_DIR, backup_filename)
-
     shutil.copy2(db_path, backup_path)
     print(f"Backup created: {backup_path}")
 
 
 # -------------------------------
-# Main import function
+# Import Function
 # -------------------------------
-def import_words_yaml(
-    yaml_file=YAML_FILE, db_file=DB_FILE, schema_file=SCHEMA_FILE
+def import_words_folder(
+    words_dir=WORDS_DIR,
+    taxonomy_file=TAXONOMY_FILE,
+    db_file=DB_FILE,
+    schema_file=SCHEMA_FILE,
 ):
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    yaml_path = os.path.join(script_dir, yaml_file)
+    words_path = os.path.join(script_dir, words_dir)
+    taxonomy_path = os.path.join(script_dir, taxonomy_file)
     db_path = os.path.join(script_dir, db_file)
     schema_path = os.path.join(script_dir, schema_file)
 
-    # 1️⃣ Create DB if it doesn't exist
     create_db_if_not_exists(db_path, schema_path)
-
-    # 2️⃣ Backup DB before modifying
     backup_db(db_path)
 
-    # 3️⃣ Load YAML
-    with open(yaml_path) as f:
-        data = yaml.safe_load(f)
+    with open(taxonomy_path) as f:
+        taxonomy = yaml.safe_load(f)
 
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
-    # Lookup dictionary for topics
     topic_lookup = {}
 
-    # Insert Subjects → Courses → Topics
-    for subj in data["subjects"]:
+    for subj in taxonomy["subjects"]:
         subject_id = get_or_create_subject(cursor, subj["name"])
         for course in subj["courses"]:
             course_id = get_or_create_course(
@@ -182,28 +174,29 @@ def import_words_yaml(
                 )
                 topic_lookup[(course["name"], topic["code"])] = (
                     topic_id,
-                    course_id,
                     subject_id,
                 )
 
-    # Insert Words and link to topics
-    for word in data["words"]:
-        for topic_ref in word.get("topics", []):
-            course_name = topic_ref["course"]
+    # Process each word file
+    for file_path in glob.glob(os.path.join(words_path, "*.yaml")):
+        with open(file_path) as f:
+            word_data = yaml.safe_load(f)
+
+        for topic_ref in word_data.get("topics", []):
+            course = topic_ref["course"]
             for code in topic_ref["codes"]:
-                lookup = topic_lookup.get((course_name, code))
-                if lookup:
-                    topic_id, course_id, subject_id = lookup
-                    word_id = get_or_create_word(cursor, word, subject_id)
+                if (course, code) in topic_lookup:
+                    topic_id, subject_id = topic_lookup[(course, code)]
+                    word_id = get_or_create_word(cursor, word_data, subject_id)
                     link_word_to_topic(cursor, word_id, topic_id)
 
     conn.commit()
     conn.close()
-    print("Import complete. Database backed up and updated.")
+    print("Word import complete.")
 
 
 # -------------------------------
 # Run import if main
 # -------------------------------
 if __name__ == "__main__":
-    import_words_yaml()
+    import_words_folder()

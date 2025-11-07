@@ -41,7 +41,8 @@ def get_all_subjects_courses_topics():
     Subject.name as subject,
     Course.name as course,
     Topic.id as topic_id,
-    Topic.code, Topic.name as topic_name
+    Topic.code,
+    Topic.name as topic_name
     FROM Subject
     JOIN Course ON Subject.id = Course.subject_id
     JOIN Topic ON Course.id = Topic.course_id

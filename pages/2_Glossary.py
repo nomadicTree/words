@@ -5,8 +5,9 @@ from app_lib.repositories import (
     get_words_by_topic,
 )
 
-st.title("Glossary")
-st.set_page_config(page_title="FrayerStore | Glossary", page_icon="🔎")
+PAGE_TITLE = "Glossary"
+st.title(PAGE_TITLE)
+st.set_page_config(page_title=f"FrayerStore | {PAGE_TITLE}", page_icon="🔎")
 
 data = get_all_subjects_courses_topics()
 
