@@ -1,14 +1,18 @@
+"""Database queries"""
+
+from typing import List
+import sqlite3
 from app_lib.db import get_db
 
 
-def search_words(query):
+def search_words(query: str) -> List[sqlite3.Row]:
     """Search database for words matching query
 
     Args:
         query (str): search query
 
     Returns:
-        list of sqlite3.Row: rows matching the query
+        list of sqlite3.Row: rows of matching words
     """
     query = query.strip()
     db = get_db()
@@ -17,7 +21,7 @@ def search_words(query):
     return rows
 
 
-def get_subject_name(subject_id):
+def get_subject_name(subject_id: int) -> str:
     """Return subject name given its ID
 
     Args:
@@ -33,7 +37,7 @@ def get_subject_name(subject_id):
     return subject_name
 
 
-def get_topics_for_word(word_id):
+def get_topics_for_word(word_id: int) -> List[sqlite3.Row]:
     """Return all topics associated with a given word
 
     Args:
@@ -59,7 +63,7 @@ def get_topics_for_word(word_id):
     return rows
 
 
-def get_all_subjects_courses_topics():
+def get_all_subjects_courses_topics() -> List[sqlite3.Row]:
     """Return a list of rows containing all subjects, courses, and topics
     Returns:
         list of sqlite3.Row: rows corresponding to subjects, courses, and topics
@@ -83,7 +87,7 @@ def get_all_subjects_courses_topics():
     return rows
 
 
-def get_words_by_topic(topic_id):
+def get_words_by_topic(topic_id: int) -> List[sqlite3.Row]:
     """Return a list of rows containing all words associated with a given topic
     Args:
         topic_id (int): topic ID
@@ -101,7 +105,7 @@ def get_words_by_topic(topic_id):
     return rows
 
 
-def get_word_by_id(word_id):
+def get_word_by_id(word_id: int) -> sqlite3.Row:
     """Return row for word given its id
 
     Args:
