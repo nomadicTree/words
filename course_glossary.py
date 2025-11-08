@@ -7,7 +7,7 @@ from app_lib.repositories import (
 from app_lib.selection_helpers import select_subject, select_course
 from app_lib.utils import apply_styles, render_frayer
 
-PAGE_TITLE = "Glossary"
+PAGE_TITLE = "Course Glossary"
 
 
 def get_words_for_course(data, subject, course):
