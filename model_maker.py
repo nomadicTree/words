@@ -79,10 +79,25 @@ def word_input_form():
     """Render input fields for word data and display YAML output."""
 
     word = st.text_input("Word")
-    definition = st.text_area("Definition")
-    characteristics = st.text_area("Characteristics (one per line)")
-    examples = st.text_area("Examples (one per line)")
-    non_examples = st.text_area("Non-examples (one per line)")
+    definition = st.text_area("Definition", height="content")
+    characteristics = st.text_area(
+        "Characteristics",
+        help="List characteristics, one per line.",
+        placeholder="Characteristic 1\nCharacteristic 2,\n...",
+        height="content",
+    )
+    examples = st.text_area(
+        "Examples",
+        help="List examples, one per line.",
+        placeholder="Example 1\nExample 2,\n...",
+        height="content",
+    )
+    non_examples = st.text_area(
+        "Non-examples",
+        help="List non-examples, one per line.",
+        placeholder="Non-example 1\nNon-example 2,\n...",
+        height="content",
+    )
     yaml_data = {
         "word": word.strip(),
         "definition": definition.strip(),
@@ -129,20 +144,24 @@ def main():
         sort_keys=False,
         allow_unicode=True,
     )
-    st.code(
-        word_yaml,
-        wrap_lines=True,
-        language="yaml",
-    )
-    st.download_button(
-        "Download YAML",
-        word_yaml,
-        file_name=safe_snake_case_filename(word_data["word"], "yaml"),
-    )
+
+    col1, col2 = st.columns([3, 1])
+    with col1:
+        st.code(
+            word_yaml,
+            wrap_lines=True,
+            language="yaml",
+        )
+    with col2:
+        st.download_button(
+            "Download YAML",
+            word_yaml,
+            file_name=safe_snake_case_filename(word_data["word"], "yaml"),
+        )
 
     st.subheader("Frayer preview")
     word_data["id"] = 0  # Dummy ID for preview
-    with st.expander(word_data["word"], expanded=True):
+    with st.expander(word_data["word"], expanded=False):
         render_frayer(
             word_data,
             show_link=False,
