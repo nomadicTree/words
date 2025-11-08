@@ -32,7 +32,7 @@ def blank_box():
             display: flex;
             justify-content: center; /* horizontal */
             align-items: center;    /* vertical */
-            font-size: 8rem;       /* adjust size */
+            font-size: 6rem;       /* adjust size */
             padding-bottom: 24px;
         ">
             ❓
