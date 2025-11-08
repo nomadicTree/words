@@ -1,25 +1,34 @@
-import streamlit as st
-import pandas as pd
 import re
 import unicodedata
+from typing import List
+import streamlit as st
+import pandas as pd
 
 
-def list_to_md(items):
+def list_to_md(items: List[str]) -> str:
     """Convert a list of strings to a markdown bullet list."""
     return "\n".join(f"- {item}" for item in items)
 
 
 def render_topics(topics, word_id):
+    for t in topics:
+        subject_name = t["subject_name"].replace(" ", "+")
+        course_name = t["course_name"].replace(" ", "+")
+        t["topic_url"] = (
+            f"/topic_glossary?subject={subject_name}&course={course_name}#{t['code']}"
+        )
     topics_frame = pd.DataFrame(topics)
     column_config = {
-        "code": st.column_config.Column("Code", width="auto"),
-        "topic_name": st.column_config.Column("Topic", width="auto"),
-        "course_name": st.column_config.Column("Course"),
+        "course_name": st.column_config.Column("Course", width="auto"),
+        "topic_label": st.column_config.Column("Topic", width="auto"),
+        "topic_url": st.column_config.LinkColumn(
+            "Link", width="auto", display_text="Go to Topic Glossary"
+        ),
     }
     st.dataframe(
         topics_frame,
         hide_index=True,
-        column_order=("course_name", "code", "topic_name"),
+        column_order=("course_name", "topic_label", "topic_url"),
         column_config=column_config,
         key=f"topic_frame_{word_id}",
     )
@@ -47,13 +56,18 @@ def render_frayer(
     show_subject=False,
     show_topics=False,
     show_link=True,
+    show_word=True,
     show_definition=True,
     show_examples=True,
     show_characteristics=True,
     show_non_examples=True,
 ):
-    word_url = f"/view?id={frayer_dict['id']}"
+    if show_word:
+        word = frayer_dict["word"]
+    else:
+        word = "❓"
     if show_link:
+        word_url = f"/view?id={frayer_dict['id']}"
         st.markdown(
             f"""
             <div class="frayer-title">
@@ -67,7 +81,7 @@ def render_frayer(
             unsafe_allow_html=True,
         )
     else:
-        st.subheader(frayer_dict["word"])
+        st.subheader(word)
     # Optional subject/courses display
     if show_subject:
         st.caption(f"Subject: **{frayer_dict["subject_name"]}**")
