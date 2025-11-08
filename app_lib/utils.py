@@ -42,7 +42,7 @@ def blank_box():
             justify-content: center; /* horizontal */
             align-items: center;    /* vertical */
             font-size: 6rem;       /* adjust size */
-            padding-bottom: 24px;
+            padding-bottom: 40px;
         ">
             ❓
         </div>
