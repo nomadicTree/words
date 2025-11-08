@@ -1,5 +1,4 @@
 import re
-import time
 import unicodedata
 from typing import List
 import streamlit as st
