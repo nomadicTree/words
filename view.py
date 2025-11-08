@@ -22,6 +22,12 @@ else:
         st.stop()
 
     with st.sidebar:
+        st.header("Display Options")
+        show_word = st.checkbox(
+            "Word",
+            value=True,
+            key="show_word",
+        )
         show_definition = st.checkbox(
             "Definition",
             value=True,
@@ -42,12 +48,18 @@ else:
             value=True,
             key="show_non_examples",
         )
+        show_topics = st.checkbox(
+            "Topics",
+            value=True,
+            key="show_topics",
+        )
     word = Word(word_row)
     render_frayer(
         word.as_dict(),
         show_subject=True,
-        show_topics=True,
+        show_topics=show_topics,
         show_link=False,
+        show_word=show_word,
         show_definition=show_definition,
         show_characteristics=show_characteristics,
         show_examples=show_examples,
