@@ -26,25 +26,21 @@ else:
             "Definition",
             value=True,
             key="show_definition",
-            help="Toggle visibility of definition",
         )
         show_characteristics = st.checkbox(
             "Characteristics",
             value=True,
             key="show_characteristics",
-            help="Toggle visibility of characteristics",
         )
         show_examples = st.checkbox(
             "Examples",
             value=True,
             key="show_examples",
-            help="Toggle visibility of examples",
         )
         show_non_examples = st.checkbox(
             "Non-examples",
             value=True,
             key="show_non_examples",
-            help="Toggle visibility of non-examples",
         )
     word = Word(word_row)
     render_frayer(
