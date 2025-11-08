@@ -67,12 +67,12 @@ def main():
     st.title(PAGE_TITLE)
     apply_styles()
 
-    data = get_all_subjects_courses_topics()
-
-    subject = select_subject(data)
-    course = select_course(data, subject)
-    st.divider()
-    topics_with_words = get_topics_with_words(data, subject, course)
+    with st.spinner("Loading..."):
+        data = get_all_subjects_courses_topics()
+        subject = select_subject(data)
+        course = select_course(data, subject)
+        st.divider()
+        topics_with_words = get_topics_with_words(data, subject, course)
     display_sidebar_navigation(topics_with_words)
     display_topics_and_words(topics_with_words)
 

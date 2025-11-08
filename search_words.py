@@ -46,7 +46,7 @@ def display_search_results(results: List[Word], query: str) -> None:
                     show_topics=True,
                 )
     elif query:
-        st.info("No results found.")
+        st.info(f"No results found for {query!r}.")
 
 
 def main():
@@ -68,16 +68,18 @@ def main():
     )
     st.divider()
 
-    # Perform search only if the query changed
-    if query != st.session_state.search_query:
-        st.session_state.search_query = query
-        if query:
-            st.session_state.search_results = search_query(query)
-        else:
-            st.session_state.search_results = []
+    with st.spinner("Searching..."):
 
-    # Display results
-    results = st.session_state.search_results
+        # Perform search only if the query changed
+        if query != st.session_state.search_query:
+            st.session_state.search_query = query
+            if query:
+                st.session_state.search_results = search_query(query)
+            else:
+                st.session_state.search_results = []
+
+        # Display results
+        results = st.session_state.search_results
     display_search_results(results, query)
 
 
