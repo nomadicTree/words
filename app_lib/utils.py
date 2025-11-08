@@ -25,25 +25,41 @@ def render_topics(topics, word_id):
     )
 
 
+def blank_box():
+    st.markdown(
+        """
+        <div style="
+            display: flex;
+            justify-content: center; /* horizontal */
+            align-items: center;    /* vertical */
+            font-size: 8rem;       /* adjust size */
+            padding-bottom: 24px;
+        ">
+            ❓
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
 def render_frayer(
-    word_id,
-    word,
-    definition,
-    characteristics,
-    examples,
-    non_examples,
-    subject_name=None,
-    topics=None,
-    show_link=False,
+    frayer_dict: dict,
+    show_subject=False,
+    show_topics=False,
+    show_link=True,
+    show_definition=True,
+    show_examples=True,
+    show_characteristics=True,
+    show_non_examples=True,
 ):
-    word_url = f"/view?id={word_id}"
+    word_url = f"/view?id={frayer_dict['id']}"
     if show_link:
         st.markdown(
             f"""
             <div class="frayer-title">
                 <h3>
                     <a href="{word_url}" target="_blank" class="word-link">
-                        {word} <span class="open-link-icon">🔗</span>
+                        {frayer_dict['word']} <span class="open-link-icon">🔗</span>
                     </a>
                 </h3>
             </div>
@@ -51,29 +67,40 @@ def render_frayer(
             unsafe_allow_html=True,
         )
     else:
-        st.subheader(word)
+        st.subheader(frayer_dict["word"])
     # Optional subject/courses display
-    if subject_name:
-        st.caption(f"Subject: **{subject_name}**")
+    if show_subject:
+        st.caption(f"Subject: **{frayer_dict["subject_name"]}**")
     col1, col2 = st.columns(2, border=True)
     with col1:
         st.markdown("#### Definition")
-        st.write(definition)
+        if show_definition:
+            st.write(frayer_dict["definition"])
+        else:
+            blank_box()
     with col2:
         st.markdown("#### Characteristics")
-        st.markdown(list_to_md(characteristics))
-
+        if show_characteristics:
+            st.markdown(list_to_md(frayer_dict["characteristics"]))
+        else:
+            blank_box()
     col1, col2 = st.columns(2, border=True)
     with col1:
         st.markdown("#### Examples")
-        st.markdown(list_to_md(examples))
+        if show_examples:
+            st.markdown(list_to_md(frayer_dict["examples"]))
+        else:
+            blank_box()
     with col2:
         st.markdown("#### Non-examples")
-        st.markdown(list_to_md(non_examples))
+        if show_non_examples:
+            st.markdown(list_to_md(frayer_dict["non_examples"]))
+        else:
+            blank_box()
 
-    if topics:
+    if show_topics:
         st.markdown("##### Topics:")
-        render_topics(topics, word_id)
+        render_topics(frayer_dict["topics"], frayer_dict["id"])
 
 
 def safe_snake_case_filename(s: str, extension) -> str:
