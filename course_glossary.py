@@ -38,9 +38,11 @@ def main():
 
     with st.spinner("Loading..."):
         data = get_all_subjects_courses_topics()
-        subject = select_subject(data)
-        course = select_course(data, subject)
-        st.divider()
+    subject = select_subject(data)
+    course = select_course(data, subject)
+    st.divider()
+
+    with st.spinner("Loading..."):
         words = get_words_for_course(data, subject, course)
     display_words(words)
 
