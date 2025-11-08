@@ -90,7 +90,7 @@ def word_input_form():
             c.strip() for c in characteristics.split("\n") if c.strip()
         ],
         "examples": [e.strip() for e in examples.split("\n") if e.strip()],
-        "non-examples": [
+        "non_examples": [
             ne.strip() for ne in non_examples.split("\n") if ne.strip()
         ],
     }
@@ -141,14 +141,13 @@ def main():
     )
 
     st.subheader("Frayer preview")
+    word_data["id"] = 0  # Dummy ID for preview
     with st.expander(word_data["word"], expanded=True):
         render_frayer(
-            0,
-            word_data["word"],
-            word_data["definition"],
-            word_data["characteristics"],
-            word_data["examples"],
-            word_data["non-examples"],
+            word_data,
+            show_link=False,
+            show_subject=False,
+            show_topics=False,
         )
 
 
