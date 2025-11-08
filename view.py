@@ -1,7 +1,7 @@
 import streamlit as st
 from app_lib.models import Word
 from app_lib.repositories import get_word_by_id
-from app_lib.utils import apply_styles
+from app_lib.utils import apply_styles, render_frayer
 
 PAGE_TITLE = "View"
 apply_styles()
@@ -20,5 +20,40 @@ else:
     if word_row is None:
         st.error(f"No word found with id {word_id}")
         st.stop()
+
+    with st.sidebar:
+        show_definition = st.checkbox(
+            "Definition",
+            value=True,
+            key="show_definition",
+            help="Toggle visibility of definition",
+        )
+        show_characteristics = st.checkbox(
+            "Characteristics",
+            value=True,
+            key="show_characteristics",
+            help="Toggle visibility of characteristics",
+        )
+        show_examples = st.checkbox(
+            "Examples",
+            value=True,
+            key="show_examples",
+            help="Toggle visibility of examples",
+        )
+        show_non_examples = st.checkbox(
+            "Non-examples",
+            value=True,
+            key="show_non_examples",
+            help="Toggle visibility of non-examples",
+        )
     word = Word(word_row)
-    word.display_frayer(show_subject=True, show_topics=True)
+    render_frayer(
+        word.as_dict(),
+        show_subject=True,
+        show_topics=True,
+        show_link=False,
+        show_definition=show_definition,
+        show_characteristics=show_characteristics,
+        show_examples=show_examples,
+        show_non_examples=show_non_examples,
+    )
