@@ -103,8 +103,10 @@ def render_frayer(
         render_topics(frayer_dict["topics"], frayer_dict["id"])
 
 
-def safe_snake_case_filename(s: str, extension) -> str:
+def safe_snake_case_filename(s: str = "word", extension: str = "txt") -> str:
     # Normalize unicode characters to ASCII equivalents
+    if len(s) == 0:
+        s = "word"
     s = (
         unicodedata.normalize("NFKD", s)
         .encode("ascii", "ignore")
