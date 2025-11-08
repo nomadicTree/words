@@ -42,7 +42,7 @@ def display_search_results(
     if results:
         plural = "s" if len(results) != 1 else ""
         formatted_time = format_time_text(elapsed_time)
-        st.write(
+        st.caption(
             f"Found {len(results)} result{plural} for {query!r} in {formatted_time}:"
         )
         expand_results = len(results) == 1  # Expand if only one result
