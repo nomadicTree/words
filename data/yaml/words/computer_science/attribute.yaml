@@ -82,6 +82,8 @@ non_examples:
       heal_amount = 10 # local variable, not an attribute
       self.health = self.health + heal_amount # self.health is an attribute
   ```
+- 'Class: defines the blueprint of an entire object, not just its data'
+- 'Method: defines behaviour of a class, not data'
 topics:
 - course: OCR H446
   codes:

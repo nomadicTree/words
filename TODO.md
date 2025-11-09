@@ -32,7 +32,6 @@
 - Sequence
 - Selection
 - Iteration
-- Method
 - Getter
 - Setter
 - Operator
@@ -75,3 +74,5 @@
 - Inheritance
 - Composition
 - Data hiding
+- Signature (subprograms)
+- Definition

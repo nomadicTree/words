@@ -1,0 +1,48 @@
+word: Method
+definition: A subprogram defined within a class that operates on the data of an object and defines the class's behaviour.
+characteristics:
+- Defined inside a class
+- Can access and modify the class or object's attributes (even if they are `private`)
+- Called using dot notation on an object, e.g., `object.method()`
+- 'Can be `public` or `private`, controlling access to the method: `private` methods may only be called in other methods within the class'
+- Can take parameters
+- Can return values
+- In Python, the first parameter is always `self` (this parameter is always required in the method signature but is not given arguments)
+examples:
+- Constructors
+- Setters
+- Getters
+- |-
+  Other subprograms defined within a class
+  ```python
+  class BankAccount():
+    # constructor, a method
+    def __init__(self, p_account_number):
+      self.account_number = p_account_number
+      self.__balance = 0 # a private attribute that should only be changed by methods
+
+    # get method (getter)
+    def get_balance(self):
+      return self.__balance
+
+    # set method (setter)
+    def set_balance(self, new_balance):
+      self.__balance = new_balance
+
+    # public method
+    def deposit(self, p_amount):
+      self.set_balance(self.__balance + p_amount) # using the set_balance method within another method
+
+    # private method
+    def __withdraw(self, p_amount):
+      if p_amount >= self.__balance:
+        self.set_balance(self.__balance - p_amount)
+        return self.get_balance() # methods can return values
+  ```
+non_examples:
+- 'Class: defines the blueprint of an entire object, not just its behaviour'
+- 'Attributes: these are data associated with a class'
+topics:
+- course: OCR H446
+  codes:
+  - 2.2.1
