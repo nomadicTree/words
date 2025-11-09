@@ -1,5 +1,6 @@
 import re
 import unicodedata
+from pathlib import Path
 from typing import List
 import streamlit as st
 import pandas as pd
@@ -211,3 +212,12 @@ def page_header(title: str = ""):
     if title:
         st.header(title)
     apply_styles()
+
+
+def show_markdown_file(file_path: Path, in_container: bool = False):
+    md_text = Path(file_path).read_text(encoding="utf-8")
+    if in_container:
+        with st.container(border=True):
+            st.markdown(md_text)
+    else:
+        st.markdown(md_text)
