@@ -8,7 +8,7 @@ You are free to:
  - Adapt — remix, transform, and build upon the material
 
 Under the following terms:
- - Attribution — You must give appropriate credit to “FrayerStore Contributors”,
+ - Attribution — You must give appropriate credit to "FrayerStore Contributors",
    provide a link to the license, and indicate if changes were made.
  - NonCommercial — You may not use the material for commercial purposes.
  - ShareAlike — If you remix, transform, or build upon the material, you must
