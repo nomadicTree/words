@@ -9,7 +9,7 @@ characteristics:
 examples:
   - Intel i7
   - AMD Ryzen
-non-examples:
+non_examples:
   - Von Neumann architecture
   - Harvard architecture
   - CISC

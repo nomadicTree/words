@@ -7,7 +7,7 @@ examples:
   - Sequence
   - Selection
   - Iteration
-non-examples:
+non_examples:
   - If/else statements
   - Loops (for, while, do/while)
   - Subprograms

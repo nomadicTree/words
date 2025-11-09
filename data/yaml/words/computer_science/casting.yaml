@@ -12,7 +12,7 @@ examples:
   - 'bool to string: `str(True)` &rarr; `"True"`'
   - 'int to bool: `bool(0)` &rarr; `False`'
   - 'int to bool: `bool(1)` &rarr; `True`'
-non-examples:
+non_examples:
   - 'Assignment: `x = 5`'
   - 'Concatenation: `"hello " + "world"`'
 topics:

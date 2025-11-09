@@ -9,7 +9,7 @@ characteristics:
 examples:
   - '`"hello" + "world"` &rarr; `"helloworld"`'
   - '`"hello " + "world"` &rarr; `"hello world"`'
-non-examples:
+non_examples:
   - 'Printing values separated by commas: `print("hello", "world")`'
   - 'F-strings: `f"hello {name}"`'
 topics:

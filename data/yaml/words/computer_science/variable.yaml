@@ -12,7 +12,7 @@ examples:
   - '`age = 16`'
   - '`name = input("What is your name?")`'
   - '`length = len(names)`'
-non-examples:
+non_examples:
   - Constants (`const x = 5`, `AGE = 5`)
 topics:
   - course: OCR J277

@@ -11,7 +11,7 @@ examples:
   - Program counter (PC)
   - Accumulator (ACC)
   - Current instruction register (CIR)
-non-examples:
+non_examples:
   - Clock
   - Cache
   - Arithmetic logic unit (ALU)
