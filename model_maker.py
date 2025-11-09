@@ -215,6 +215,7 @@ def main():
             show_link=False,
             show_subject=False,
             show_topics=False,
+            show_related_words=False,
         )
 
 
