@@ -9,9 +9,14 @@ def main():
     page_header(PAGE_TITLE)
 
     st.subheader("Content")
-    show_markdown_file(Path("LICENSE_CONTENT.md"), in_container=True)
+    with st.expander(
+        "Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International",
+        expanded=True,
+    ):
+        show_markdown_file(Path("LICENSE_CONTENT.md"))
     st.subheader("Software")
-    show_markdown_file(Path("LICENSE.md"), in_container=True)
+    with st.expander("MIT License", expanded=True):
+        show_markdown_file(Path("LICENSE.md"))
 
 
 if __name__ == "__main__":
