@@ -64,7 +64,7 @@ def get_or_create_word(cursor, word_data, subject_id):
 
     characteristics = json.dumps(word_data.get("characteristics", []))
     examples = json.dumps(word_data.get("examples", []))
-    non_examples = json.dumps(word_data.get("non-examples", []))
+    non_examples = json.dumps(word_data.get("non_examples", []))
 
     if res:
         word_id = res[0]

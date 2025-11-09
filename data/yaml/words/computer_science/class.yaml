@@ -1,0 +1,30 @@
+word: Class
+definition: A reusable blueprint to organise data (attributes) and behaviour (methods).
+characteristics:
+- Used in object-oriented programming
+- Can be used to create objects (i.e., instances of a class)
+- Has a constructor to create instances of itself
+- Composed of attributes and methods
+examples:
+- |-
+  ```python
+  class Person():
+      def __init__(self, p_name):
+          self.name = p_name
+
+      def introduce(self):
+          print(f"My name is {self.name}")
+  ```
+non_examples:
+- |-
+  Objects: instances created from a class, e.g.,
+  ```python
+  person_1 = Person("Alice")
+  person_2 = Person("Sam")
+  ```
+- 'Attributes: classes have attributes'
+- 'Methods: classes have methods'
+topics:
+- course: OCR H446
+  codes:
+  - 2.2.1

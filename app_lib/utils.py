@@ -5,11 +5,6 @@ import streamlit as st
 import pandas as pd
 
 
-def list_to_md(items: List[str]) -> str:
-    """Convert a list of strings to a markdown bullet list."""
-    return "\n".join(f"- {item}" for item in items)
-
-
 def render_topics(topics, word_id):
     for t in topics:
         subject_name = t["subject_name"].replace(" ", "+")
@@ -49,6 +44,30 @@ def blank_box():
         """,
         unsafe_allow_html=True,
     )
+
+
+def render_list(items: list[str]) -> None:
+    """Render a mixed list of Markdown text and code blocks nicely in Streamlit."""
+    buffer = []  # collects consecutive text items
+
+    def flush_buffer():
+        if buffer:
+            st.markdown("\n".join(f"- {x}" for x in buffer))
+            buffer.clear()
+
+    for item in items:
+        item = item.strip()
+        if item.startswith("```"):
+            flush_buffer()
+            lines = item.split("\n")
+            first_line = lines[0].strip("`")
+            language = first_line or None
+            code_content = "\n".join(lines[1:-1])
+            st.code(code_content, language=language)
+        else:
+            buffer.append(item)
+
+    flush_buffer()
 
 
 def render_frayer(
@@ -95,20 +114,20 @@ def render_frayer(
     with col2:
         st.markdown("#### Characteristics")
         if show_characteristics:
-            st.markdown(list_to_md(frayer_dict["characteristics"]))
+            render_list(frayer_dict["characteristics"])
         else:
             blank_box()
     col1, col2 = st.columns(2, border=True)
     with col1:
         st.markdown("#### Examples")
         if show_examples:
-            st.markdown(list_to_md(frayer_dict["examples"]))
+            render_list(frayer_dict["examples"])
         else:
             blank_box()
     with col2:
         st.markdown("#### Non-examples")
         if show_non_examples:
-            st.markdown(list_to_md(frayer_dict["non_examples"]))
+            render_list(frayer_dict["non_examples"])
         else:
             blank_box()
 
