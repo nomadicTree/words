@@ -10,6 +10,7 @@ pages = {
     ],
     "Info": [
         st.Page("about.py", title="About", icon="ℹ️"),
+        st.Page("ai_usage.py", title="AI Usage", icon="💻"),
         st.Page("license.py", title="Licensing", icon="⚖️"),
         st.Page("planned_words.py", title="Planned Words", icon="📝"),
     ],
