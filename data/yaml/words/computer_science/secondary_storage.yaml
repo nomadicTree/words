@@ -11,7 +11,7 @@ examples:
   - USB flash drive
   - Optical drive (inlcuding CDs and DVDs)
   - SD card
-non-examples:
+non_examples:
   - Registers
   - Cache
   - RAM
