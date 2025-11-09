@@ -1,0 +1,37 @@
+word: Object
+definition: >
+  Encapsulated data (attributes) and behaviour (methods) in the form of an
+  instance of a class. An object is the 'thing' that exists in memory that has its
+  own data (attributes) and can be made to execute its class's behaviour (methods).
+characteristics:
+- Has its own values for the class's attributes
+- Can call methods defined in its class
+- Is created using the constructor of its class
+- Multiple objects can be created from the same class
+examples:
+- |-
+  In Python, lists are objects:
+  ```python
+  names = ["Justice", "Simon", "Ash"] # a list object, an instance of the built-in list class
+  names.append("Shirley") # using the append method on the list object with the identifier 'names'
+  ```
+- |-
+  BankAccount objects are instances of the BankAccount class:
+  ```python
+  class BankAccount:
+    # constructor
+    def __init__(self, p_account_number):
+      self.account_number = p_account_number
+      self.balance = 0
+
+  b = BankAccount(12345) # creates a BankAccount object, an instance of the BankAccount class
+  ```
+non_examples:
+- 'Instance: ''instance'' describes the relationship of an object to its class; every
+  object is an instance, but ''instance'' refers to the relationship, not the actual
+  thing in memory'
+- 'Class: a blueprint from which objects are created'
+topics:
+- course: OCR H446
+  codes:
+  - 2.2.1

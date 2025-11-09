@@ -35,7 +35,6 @@
 - Method
 - Getter
 - Setter
-- Object
 - Operator
 - Logical operator
 - Arithmetic operator
