@@ -11,6 +11,7 @@ pages = {
     "Info": [
         st.Page("about.py", title="About", icon="ℹ️"),
         st.Page("license.py", title="Licensing", icon="⚖️"),
+        st.Page("planned_words.py", title="Planned Words", icon="📝"),
     ],
     "Utilities": [
         st.Page("model_maker.py", title="Model Maker", icon="🛠️"),
