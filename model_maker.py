@@ -144,8 +144,13 @@ def format_multiline_strings(items: List[str]) -> List[str]:
     # Convert only multiline examples to literal block style
     formatted_items = []
     for i in items:
-        if "\n" in i:  # multiline -> use literal block
-            formatted_items.append(LiteralString(i))
+        if "\n" in i:
+            # Remove trailing whitespace from each line, preserve leading spaces
+            lines = [line.rstrip() for line in i.splitlines()]
+            cleaned = "\n".join(
+                lines
+            ).rstrip()  # also remove trailing blank lines
+            formatted_items.append(LiteralString(cleaned))
         else:  # single line -> leave plain
             formatted_items.append(i)
 
@@ -187,16 +192,13 @@ def main():
     )
 
     word_yaml = yaml.dump(
-        word_data,
-        sort_keys=False,
-        allow_unicode=True,
+        word_data, sort_keys=False, allow_unicode=True, width=float("inf")
     )
 
     with col2:
         st.header("YAML preview")
         st.code(
             word_yaml,
-            wrap_lines=True,
             language="yaml",
         )
         st.download_button(
