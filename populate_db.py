@@ -178,7 +178,10 @@ def import_words_folder(
                 )
 
     # Process each word file
-    for file_path in glob.glob(os.path.join(words_path, "*.yaml")):
+    for file_path in glob.glob(
+        os.path.join(words_path, "**", "*.yaml"), recursive=True
+    ):
+        print(f"Importing word from {file_path}")
         with open(file_path) as f:
             word_data = yaml.safe_load(f)
 
