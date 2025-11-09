@@ -1,10 +1,8 @@
 word: Object
 definition: >
-  Encapsulated data (attributes) and behaviour (methods) in the form of an
-  instance of a class. An object is the 'thing' that exists in memory that has its
-  own data (attributes) and can be made to execute its class's behaviour (methods).
+  A unit of encapsulated data (attributes) and behaviour (methods). An object is the 'thing' that exists in memory with attributes and can execute its class's methods.
 characteristics:
-- Has its own values for the class's attributes
+- Has its own values for its class's attributes
 - Can call methods defined in its class
 - Is created using the constructor of its class
 - Multiple objects can be created from the same class
