@@ -20,5 +20,5 @@ pages = {
 }
 
 pg = st.navigation(pages)
-st.set_page_config(layout="wide")
+st.set_page_config(page_title="FrayerStore", layout="wide")
 pg.run()
