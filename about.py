@@ -29,7 +29,7 @@ def main():
         example_word = Word(get_word_by_id(4))
         render_frayer(example_word.as_dict())
 
-    st.subheader("Why I built this")
+    st.subheader("Why I am building this")
     st.markdown(
         """
         I had the idea for FrayerStore following an inset day at my school.
