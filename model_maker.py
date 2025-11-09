@@ -166,8 +166,10 @@ def main():
     st.divider()
 
     # Build YAML-ready topics
-
-    word_data = word_input_form()
+    col1, col2 = st.columns([2, 1])
+    with col1:
+        st.header("Word Data Input")
+        word_data = word_input_form()
 
     yaml_topics = [
         {"course": course, "codes": sorted(codes)}
@@ -175,8 +177,6 @@ def main():
         if codes
     ]
     word_data["topics"] = yaml_topics
-
-    st.subheader("YAML preview")
 
     word_data["examples"] = format_multiline_strings(word_data["examples"])
     word_data["non_examples"] = format_multiline_strings(
@@ -192,14 +192,13 @@ def main():
         allow_unicode=True,
     )
 
-    col1, col2 = st.columns([3, 1])
-    with col1:
+    with col2:
+        st.header("YAML Preview")
         st.code(
             word_yaml,
             wrap_lines=True,
             language="yaml",
         )
-    with col2:
         st.download_button(
             "Download YAML",
             word_yaml,
