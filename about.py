@@ -38,9 +38,8 @@ def main():
 
         Frayer Models are great, but I find the mechanics of making and sharing them tedious.
 
-        FrayerStore solves my issues with making and using Frayer Models in the classroom:
-        - A central place to store and share Frayer Models;
-        - Easily searchable and shareable;
+        FrayerStore solves my issues with making and using Frayer Models in the classroom. It provides:
+        - A central, searchable place to store and share Frayer Models;
         - Filtering by course and topic;
         - Tools to create Frayer Models quickly.
 
@@ -64,9 +63,9 @@ def main():
     st.markdown(
         """
         FrayerStore is an open-source project—contributions are welcome!
-        For detailed information about licensing, please see the [Licensing page](./license).
+        For detailed information about licensing, see the [Licensing page](./license).
 
-        To contribute new Frayer Models, just follow these steps:
+        To contribute new Frayer Models, follow these steps:
         1. Create a Frayer Model using the [Model Maker](./model_maker).
         2. Download the YAML file.
         3. Submit it as a Pull request in the GitHub repository.
