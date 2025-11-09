@@ -33,3 +33,12 @@ CREATE TABLE WordTopic (
     topic_id INTEGER NOT NULL REFERENCES Topic(id) ON DELETE CASCADE,
     PRIMARY KEY(word_id, topic_id)
 );
+
+CREATE TABLE WordRelationship (
+    id INTEGER PRIMARY KEY,
+    word_id1 INTEGER NOT NULL REFERENCES Word(id) ON DELETE CASCADE,
+    word_id2 INTEGER NOT NULL REFERENCES Word(id) ON DELETE CASCADE,
+    CHECK(word_id1 != word_id2),
+    CHECK(word_id1 < word_id2),
+    UNIQUE(word_id1, word_id2)
+)
