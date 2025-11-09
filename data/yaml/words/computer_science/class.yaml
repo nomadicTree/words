@@ -9,13 +9,13 @@ examples:
 - |-
   ```python
   class Person():
-      # constructor
-      def __init__(self, p_name):
-          self.name = p_name # assign the name attribute the value of p_name
+    # constructor
+    def __init__(self, p_name):
+      self.name = p_name # assign the name attribute the value of p_name
 
-      # method
-      def introduce(self):
-          print(f"My name is {self.name}")
+    # method
+    def introduce(self):
+      print(f"My name is {self.name}")
   ```
 non_examples:
 - |-

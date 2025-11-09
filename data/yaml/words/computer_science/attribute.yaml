@@ -8,23 +8,21 @@ characteristics:
 - Could be initialised with arguments passed to the constructor or with default values
 - Could be accessed using `get` methods
 - Could be changed using `set` methods
-- In Python, instance-level attributes are typically defined within the constructor using `self.<attribute_name>`
-- In Python, attributes are accessed and modified using dot notation (e.g., `object.attribute_name`)
 examples:
 - |-
   Instance-level attributes declared in constructor (Python):
   ```python
   class BankAccount():
-      # constructor
-     def __init__(self, p_owner, p_initial_balance):
-          self.owner = p_owner # owner is a public attribute
-          self.__balance = p_initial_balance # balance is a private attribute
-          self.account_type = "Savings" # account_type is a public attribute with a default value
+    # constructor
+    def __init__(self, p_owner, p_initial_balance):
+      self.owner = p_owner # owner is a public attribute
+      self.__balance = p_initial_balance # balance is a private attribute
+      self.account_type = "Savings" # account_type is a public attribute with a default value
 
       # method to increase balance
-      def deposit(self, p_amount):
-          if p_amount > 0:
-          self.__balance = self.__balance + p_amount # updating balance attribute
+    def deposit(self, p_amount):
+      if p_amount > 0:
+      self.__balance = self.__balance + p_amount # updating balance attribute
   ```
 - |-
   Changing an attribute in Python using direct access:
@@ -38,23 +36,30 @@ examples:
   b = BankAccount("Timmy Banks", 500)
   b.deposit(50) # using the deposit method updates the balance attribute
   ```
-- "Class-level attribute (Python):\n```python\nclass BankAccount():\n   account_type\
-  \ = \"Savings\" # class-level attribute shared across all instances of the class\n\
-  \   \n   # constructor\n   def __init__(self, p_owner, p_initial_balance):\n   \
-  \     self.owner = p_owner\n        self.__balance = p_initial_balance\n```"
+- |-
+  Class-level attribute (Python):
+  ```python
+  class BankAccount():
+    account_type  "Savings" # class-level attribute shared across all instances of the class
+    
+    # constructor
+    def __init__(self, p_owner, p_initial_balance):
+      self.owner = p_owner
+      self.__balance = p_initial_balance
+  ```
 - |-
   Attributes declared in class definition (Java):
   ```java
   public class BankAccount {
-     public String name; // public attribute (instance-level)
-     private double balance; // private attribute (instance-level)
-     public String accountType = "Savings"; // public attribute (instance-level) with default value
+    public String name; // public attribute (instance-level)
+    private double balance; // private attribute (instance-level)
+    public String accountType = "Savings"; // public attribute (instance-level) with default value
 
-      // constructor
-      public BankAccount(String pOwner, double pInitialBalance) {
-          this.owner = pOwner;
-          this.balance = pInitialBalance;
-      }
+    // constructor
+    public BankAccount(String pOwner, double pInitialBalance) {
+      this.owner = pOwner;
+      this.balance = pInitialBalance;
+    }
   }
   ```
 non_examples:
@@ -62,20 +67,20 @@ non_examples:
   Parameters used in methods:
   ```python
   class BankAccount():
-      # constructor
-     def __init__(self, p_owner, p_initial_balance): # the parameters are not attributes
-          self.owner = p_owner
-          self.__balance = p_initial_balance
-          self.account_type = "Savings"
+    # constructor
+    def __init__(self, p_owner, p_initial_balance): # the parameters are not attributes
+      self.owner = p_owner
+      self.__balance = p_initial_balance
+      self.account_type = "Savings"
   ```
 - |-
   Variables used in methods:
   ```python
   class Enemy()
-  ...
-      def heal():
-          heal_amount = 10 # local variable, not an attribute
-          self.health = self.health + heal_amount # health is an attribute
+    ...
+    def heal():
+      heal_amount = 10 # local variable, not an attribute
+      self.health = self.health + heal_amount # self.health is an attribute
   ```
 topics:
 - course: OCR H446
