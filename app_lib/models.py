@@ -51,6 +51,9 @@ class Word:
     def related_words(self):
         if self._related_words is None:
             self._related_words = get_related_words(self.id)
+            self._related_words = sorted(
+                self._related_words, key=lambda w: w["word"]
+            )
             # Add urls
             for w in self._related_words:
                 w["url"] = f"/view?id={w["id"]}"
