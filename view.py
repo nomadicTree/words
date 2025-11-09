@@ -21,6 +21,9 @@ else:
         st.error(f"No word found with id {word_id}")
         st.stop()
 
+    word = Word(word_row)
+    related_words_exist = len(word.related_words) > 0
+
     with st.sidebar:
         st.header("Display Options")
         show_word = st.checkbox(
@@ -48,12 +51,19 @@ else:
             value=True,
             key="show_non_examples",
         )
+
+        if related_words_exist:
+            show_related_words = st.checkbox(
+                "Related words", value=True, key="show_related_words"
+            )
+        else:
+            show_related_words = False
+
         show_topics = st.checkbox(
             "Topics",
             value=True,
             key="show_topics",
         )
-    word = Word(word_row)
     render_frayer(
         word.as_dict(),
         show_subject=True,
@@ -64,4 +74,5 @@ else:
         show_characteristics=show_characteristics,
         show_examples=show_examples,
         show_non_examples=show_non_examples,
+        show_related_words=show_related_words,
     )
