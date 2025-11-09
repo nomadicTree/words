@@ -171,7 +171,7 @@ def main():
     st.divider()
 
     # Build YAML-ready topics
-    col1, col2 = st.columns([2, 1])
+    col1, col2 = st.columns([3, 2])
     with col1:
         st.header("Word data input")
         word_data = word_input_form()
