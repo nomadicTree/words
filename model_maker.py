@@ -168,7 +168,7 @@ def main():
     # Build YAML-ready topics
     col1, col2 = st.columns([2, 1])
     with col1:
-        st.header("Word Data Input")
+        st.header("Word data input")
         word_data = word_input_form()
 
     yaml_topics = [
@@ -193,7 +193,7 @@ def main():
     )
 
     with col2:
-        st.header("YAML Preview")
+        st.header("YAML preview")
         st.code(
             word_yaml,
             wrap_lines=True,
