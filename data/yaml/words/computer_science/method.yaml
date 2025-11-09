@@ -21,11 +21,11 @@ examples:
       self.account_number = p_account_number
       self.__balance = 0 # a private attribute that should only be changed by methods
 
-    # get method (getter)
+    # get method (getter), public method
     def get_balance(self):
       return self.__balance
 
-    # set method (setter)
+    # set method (setter), public method
     def set_balance(self, new_balance):
       self.__balance = new_balance
 
