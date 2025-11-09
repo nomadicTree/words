@@ -9,9 +9,11 @@ examples:
 - |-
   ```python
   class Person():
+      # constructor
       def __init__(self, p_name):
-          self.name = p_name
+          self.name = p_name # assign the name attribute the value of p_name
 
+      # method
       def introduce(self):
           print(f"My name is {self.name}")
   ```
@@ -19,11 +21,11 @@ non_examples:
 - |-
   Objects: instances created from a class, e.g.,
   ```python
-  person_1 = Person("Alice")
-  person_2 = Person("Sam")
+  person_1 = Person("Alice") # an instance of the Person class
+  person_2 = Person("Sam") # another instance of the Person class
   ```
-- 'Attributes: classes have attributes'
-- 'Methods: classes have methods'
+- 'Attributes: classes _have_ attributes'
+- 'Methods: classes _have_ methods'
 topics:
 - course: OCR H446
   codes:
