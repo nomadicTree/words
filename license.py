@@ -7,15 +7,15 @@ PAGE_TITLE = "Licensing"
 
 def show_markdown_file(file_path: Path):
     md_text = Path(file_path).read_text(encoding="utf-8")
-    st.markdown(md_text, unsafe_allow_html=True)
+    st.code(md_text, language="markdown")
 
 
 def main():
     page_header(PAGE_TITLE)
 
-    st.subheader("Content license")
+    st.subheader("Content")
     show_markdown_file(Path("LICENSE_CONTENT.md"))
-    st.subheader("Code license")
+    st.subheader("Software")
     show_markdown_file(Path("LICENSE.md"))
 
 
