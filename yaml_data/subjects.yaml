@@ -1,0 +1,5 @@
+subjects:
+  - name: Computer Science
+    courses:
+      - file: computer_science/courses/ocr_j277.yaml
+      - file: computer_science/courses/ocr_h446.yaml
