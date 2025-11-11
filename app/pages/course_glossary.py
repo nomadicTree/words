@@ -1,35 +1,60 @@
 import streamlit as st
-from app_lib.models import Word
-from app_lib.repositories import (
-    get_all_subjects_courses_topics,
-    get_words_by_topic,
-)
-from app_lib.selection_helpers import select_subject, select_course
+
 from app.components.common import page_header
+from app.components.selection_helpers import select_course, select_subject
+from app.core.components.frayer import render_frayer_model
+from app.core.models.word_models import Word
+from app.core.respositories.topics_repo import (
+    get_all_subjects_courses_topics,
+    get_words_for_course as fetch_words_for_course,
+)
 
 PAGE_TITLE = "Course Glossary"
 
+def format_level_names(levels) -> str:
+    names = [level.name for level in levels if level and level.name]
+    names = list(dict.fromkeys(names))
+    if not names:
+        return "All levels"
+    if len(names) == 1:
+        return names[0]
+    if len(names) == 2:
+        return " and ".join(names)
+    return ", ".join(names[:-1]) + f", and {names[-1]}"
 
-def get_words_for_course(data, subject, course):
-    all_words = []
-    all_words_set = set()
-    for row in data:
-        if row["subject"] == subject and row["course"] == course:
-            topic_id = row["topic_id"]
-            for w in get_words_by_topic(topic_id) or []:
-                if w["word"] not in all_words_set:
-                    all_words_set.add(w["word"])
-                    all_words.append(Word(w))
-    if not all_words:
+
+def load_words_for_course(data, subject, course):
+    matching_rows = [
+        row for row in data if row["subject"] == subject and row["course"] == course
+    ]
+    if not matching_rows:
+        st.info("No topics available for this course.")
+        st.stop()
+
+    course_id = matching_rows[0]["course_id"]
+    words = fetch_words_for_course(course_id)
+    if not words:
         st.info("No words available for this course.")
         st.stop()
-    return sorted(all_words, key=lambda w: w.word.lower())
+
+    return words
 
 
-def display_words(words):
-    for w in words:
-        with st.expander(w.word, expanded=False):
-            render_frayer(w.as_dict(), show_topics=True)
+def display_words(words: list[Word]):
+    for word in words:
+        with st.expander(word.word, expanded=False):
+            for index, version in enumerate(word.versions):
+                st.caption(f"Levels: {format_level_names(version.levels)}")
+                render_frayer_model(
+                    version,
+                    word.word,
+                    word_id=word.word_id,
+                    show_word=False,
+                    related_words=word.related_words,
+                    show_topics=True,
+                )
+                if index < len(word.versions) - 1:
+                    st.divider()
 
 
 def main():
@@ -42,7 +67,7 @@ def main():
     st.divider()
 
     with st.spinner("Loading..."):
-        words = get_words_for_course(data, subject, course)
+        words = load_words_for_course(data, subject, course)
     display_words(words)
 
 
