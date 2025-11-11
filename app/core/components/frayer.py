@@ -101,7 +101,9 @@ def render_list(items: list[str]) -> None:
 
 def render_frayer_model(
     word: WordVersion,
+    word_str: str,
     word_id: int = 0,
+    show_word=True,
     related_words: list[RelatedWord] | None = None,
     show_topics=False,
     show_definition=True,
@@ -110,7 +112,8 @@ def render_frayer_model(
     show_non_examples=True,
     show_related_words=True,
 ):
-
+    if show_word:
+        st.subheader(word_str)
     col1, col2 = st.columns(2, border=True)
     with col1:
         st.markdown("#### Definition")
