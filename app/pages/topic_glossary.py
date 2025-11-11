@@ -1,42 +1,32 @@
 import streamlit as st
-
-from app.components.common import page_header
-from app.components.selection_helpers import select_course, select_subject
-from app.core.components.frayer import render_frayer_model
-from app.core.models.course_model import Course
-from app.core.models.level_model import Level
-from app.core.models.subject_model import Subject
-from app.core.models.topic_model import Topic
-from app.core.models.word_models import Word
-from app.core.respositories.topics_repo import (
+from app_lib.models import Word
+from app_lib.repositories import (
     get_all_subjects_courses_topics,
-    get_words_for_topic,
+    get_words_by_topic,
 )
+from app_lib.selection_helpers import select_subject, select_course
+from app_lib.utils import render_frayer, page_header
 
 PAGE_TITLE = "Topic Glossary"
 
 
-def build_topic(row: dict) -> Topic:
-    subject = Subject(row["subject_id"], row["subject"])
-    level = (
-        Level(row["level_id"], row["level_name"], row["level_description"])
-        if row["level_id"] is not None
-        else None
-    )
-    course = Course(row["course_id"], row["course"], subject, level)
-    return Topic(row["topic_id"], row["code"], row["topic_name"], course)
-
-
 def get_topics_with_words(data, subject, course):
-    topics_with_words: list[tuple[Topic, list[Word]]] = []
+    topics_with_words = []
     for row in data:
-        if row["subject"] != subject or row["course"] != course:
-            continue
-
-        topic = build_topic(row)
-        words = get_words_for_topic(topic.topic_id)
-        if words:
-            topics_with_words.append((topic, words))
+        if row["subject"] == subject and row["course"] == course:
+            topic_id = row["topic_id"]
+            words = sorted(
+                get_words_by_topic(topic_id), key=lambda w: w["word"].lower()
+            )
+            if words:  # Only include topics with words
+                topics_with_words.append(
+                    {
+                        "id": topic_id,
+                        "code": row["code"],
+                        "label": row["topic_label"],
+                        "words": words,
+                    }
+                )
 
     if not topics_with_words:
         st.info("No words for this course.")
@@ -46,53 +36,30 @@ def get_topics_with_words(data, subject, course):
 
 
 def display_sidebar_navigation(topics):
-    for topic, _ in topics:
+    for topic in topics:
         st.sidebar.markdown(
             f"""
-            <a href="#{topic.code}" style="
+            <a href="#{topic['code']}" style="
                 text-decoration: none;
                 color: inherit;
                 display: block;
                 font-size: 0.875rem;
             ">
-                {topic.label}
+                {topic['label']}
             </a>
             """,
             unsafe_allow_html=True,
         )
 
 
-def format_level_names(levels) -> str:
-    names = [level.name for level in levels if level and level.name]
-    names = list(dict.fromkeys(names))
-    if not names:
-        return "All levels"
-    if len(names) == 1:
-        return names[0]
-    if len(names) == 2:
-        return " and ".join(names)
-    return ", ".join(names[:-1]) + f", and {names[-1]}"
-
-
 def display_topics_and_words(topics):
-    for topic, words in topics:
-        st.markdown(f"<a id='{topic.code}'></a>", unsafe_allow_html=True)
-        st.subheader(topic.label)
-        for word in words:
-            with st.expander(word.word, expanded=False):
-                for index, version in enumerate(word.versions):
-                    st.caption(f"Levels: {format_level_names(version.levels)}")
-                    render_frayer_model(
-                        version,
-                        word.word,
-                        word_id=word.word_id,
-                        show_word=False,
-                        related_words=word.related_words,
-                        show_topics=False,
-                        show_related_words=False,
-                    )
-                    if index < len(word.versions) - 1:
-                        st.divider()
+    for topic in topics:
+        st.markdown(f"<a id='{topic['code']}'></a>", unsafe_allow_html=True)
+        st.subheader(topic["label"])
+        for w in topic["words"]:
+            word_obj = Word(w)
+            with st.expander(word_obj.word, expanded=False):
+                render_frayer(word_obj.as_dict())
 
 
 # ----------------------------
