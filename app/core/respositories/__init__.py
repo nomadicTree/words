@@ -1,10 +1,6 @@
 """Repository helpers exposed for external use."""
 
-from .topics_repo import (
-    get_all_subjects_courses_topics,
-    get_words_for_course,
-    get_words_for_topic,
-)
+from .topics_repo import get_all_subjects_courses_topics, get_words_for_topic
 from .words_repo import (
     get_related_words,
     get_word_full,
@@ -18,7 +14,6 @@ from .words_repo import (
 __all__ = [
     "get_all_subjects_courses_topics",
     "get_words_for_topic",
-    "get_words_for_course",
     "get_related_words",
     "get_word_full",
     "get_word_subject",
