@@ -157,6 +157,8 @@ def main():
         render_frayer_model(
             version,
             word_id=word.word_id,
+            word_str=word.word,
+            show_word=False,
             related_words=word.related_words,
             show_topics=opts["show_topics"],
             show_definition=opts["show_definition"],
