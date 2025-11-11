@@ -4,18 +4,16 @@ from app_lib.repositories import (
     get_all_subjects_courses_topics,
     get_words_by_topic,
 )
-from app.components.selection_helpers import select_subject, select_course
+from app_lib.selection_helpers import select_subject, select_course
 from app_lib.utils import render_frayer, page_header
 
 PAGE_TITLE = "Topic Glossary"
 
 
 def get_topics_with_words(data, subject, course):
-    if subject is None or course is None:
-        return []
     topics_with_words = []
     for row in data:
-        if row["subject"] == subject.name and row["course"] == course.name:
+        if row["subject"] == subject and row["course"] == course:
             topic_id = row["topic_id"]
             words = sorted(
                 get_words_by_topic(topic_id), key=lambda w: w["word"].lower()
@@ -72,13 +70,8 @@ def main():
 
     with st.spinner("Loading..."):
         data = get_all_subjects_courses_topics()
-    subject = select_subject()
-    if subject is None:
-        st.stop()
-
-    course = select_course(subject)
-    if course is None:
-        st.stop()
+    subject = select_subject(data)
+    course = select_course(data, subject)
     st.divider()
     with st.spinner("Loading..."):
         topics_with_words = get_topics_with_words(data, subject, course)
