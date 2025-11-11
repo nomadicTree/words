@@ -4,6 +4,7 @@ import time
 import streamlit as st
 from app.core.respositories.words_repo import search_words
 from app.core.utils.strings import format_time_text
+from app.components.common import page_header
 
 # from app_lib.utils import apply_styles, render_frayer, format_time_text
 
@@ -39,8 +40,7 @@ def display_search_results(
 
 def main():
     """Page contents including search bar and search results"""
-    st.title("FrayerStore")
-    # apply_styles()
+    page_header()
 
     # Initialize session state for search
     if "search_query" not in st.session_state:
