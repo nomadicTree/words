@@ -1,4 +1,5 @@
 word: Register
+levels: [KS4,KS5]
 definition: >
   Small, fast storage location within the CPU.
 characteristics:

@@ -27,5 +27,5 @@ def import_subjects(subjects_yaml_path, subjects_root, db_path):
                     print(f"⚠️  Missing course file: {course_path}")
                     continue
 
-                # pass db_path for its own context management
-                import_course(db_path, subject_id, course_path)
+                # ✅ pass the existing connection instead of db_path
+                import_course(conn, subject_id, course_path)

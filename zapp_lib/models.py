@@ -26,7 +26,7 @@ class Word:
             if "non_examples" in row.keys()
             else []
         )
-        self.subject_name = get_subject_name(row["subject_id"])
+        self.subject_name = row["subject_name"]
 
         topic_rows = get_topics_for_word(self.id)
 
@@ -49,6 +49,7 @@ class Word:
 
     @property
     def related_words(self):
+        return []
         if self._related_words is None:
             self._related_words = get_related_words(self.id)
             self._related_words = sorted(

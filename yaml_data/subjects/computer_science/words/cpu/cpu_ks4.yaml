@@ -1,0 +1,17 @@
+word: CPU
+levels: [KS4]
+definition: >
+  Central Processing Unit, the brain of the computer.
+characteristics:
+  - Performs the Fetch-Decode-Execute (FDE) cycle
+  - Receives data from input and memory
+  - Executes instructions
+  - Performs calculations
+examples:
+  - Intel i7
+  - AMD Ryzen
+non_examples:
+  - Von Neumann architecture
+topics:
+  - course: OCR J277
+    codes: [1.1.1, 1.1.2]

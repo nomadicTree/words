@@ -2,8 +2,11 @@ import os
 import sqlite3
 import streamlit as st
 
+# Resolve path to app/db/Words.db
 DB_PATH = os.path.join(
-    os.path.dirname(os.path.dirname(__file__)), "data", "words.db"
+    os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
+    "db",
+    "Words.db",
 )
 
 

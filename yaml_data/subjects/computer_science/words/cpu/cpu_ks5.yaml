@@ -1,4 +1,5 @@
 word: CPU
+levels: [KS5]
 definition: >
   Central Processing Unit, the brain of the computer.
 characteristics:
@@ -15,7 +16,5 @@ non_examples:
   - CISC
   - RISC
 topics:
-  - course: OCR J277
-    codes: [1.1.1, 1.1.2]
   - course: OCR H446
     codes: [1.1.1, 1.1.2]
