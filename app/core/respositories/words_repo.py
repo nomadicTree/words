@@ -530,3 +530,71 @@ def get_word_versions_for_topic(topic: Topic) -> list[WordVersion]:
         )
 
     return results
+
+
+def get_word_versions_for_course(course: Course) -> list[WordVersion]:
+    db = get_db()
+
+    q = """
+        SELECT
+            wv.id AS wv_id,
+            wv.word_id,
+            w.word AS word,
+            s.id AS subject_id,
+            s.name AS subject_name,
+            wv.definition,
+            wv.characteristics,
+            wv.examples,
+            wv.non_examples
+        FROM WordVersionContexts wvc
+        JOIN Topics t ON wvc.topic_id = t.id
+        JOIN WordVersions wv ON wvc.word_version_id = wv.id
+        JOIN Words w ON wv.word_id = w.id
+        JOIN Subjects s ON w.subject_id = s.id
+        WHERE t.course_id = :course_id
+        ORDER BY w.word COLLATE NOCASE;
+    """
+
+    rows = db.execute(q, {"course_id": course.course_id}).fetchall()
+
+    results = []
+    seen = set()
+
+    for r in rows:
+        wv_id = r["wv_id"]
+        if wv_id in seen:
+            continue
+        seen.add(wv_id)
+
+        # Fetch levels
+        level_rows = db.execute(
+            """
+            SELECT l.id, l.name, l.description
+            FROM WordVersionLevels wvl
+            JOIN Levels l ON wvl.level_id = l.id
+            WHERE wvl.word_version_id = :wv_id
+            """,
+            {"wv_id": wv_id},
+        ).fetchall()
+        levels = [Level(l["id"], l["name"], l["description"]) for l in level_rows]
+
+        # Fetch topics
+        subject = Subject(r["subject_id"], r["subject_name"])
+        topics = get_word_topics_for_version(wv_id, subject)
+
+        # Build WordVersion object
+        results.append(
+            WordVersion(
+                wv_id=wv_id,
+                word=r["word"],
+                word_id=r["word_id"],
+                definition=r["definition"],
+                characteristics=r["characteristics"],
+                examples=r["examples"],
+                non_examples=r["non_examples"],
+                levels=levels,
+                topics=topics,
+            )
+        )
+
+    return results
