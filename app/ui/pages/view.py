@@ -100,7 +100,7 @@ def main():
 
     choices = [WordVersionChoice(v) for v in word.versions]
 
-    selected_choice = select_item(items=choices, key="level", label="Level")
+    selected_choice = select_item(items=choices, key="level", label="Select level")
 
     # Retrieve the underlying WordVersion
     version = selected_choice.version
