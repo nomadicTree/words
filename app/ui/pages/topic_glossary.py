@@ -39,6 +39,8 @@ def main():
         for wv in word_versions:
             with st.expander(wv.word, expanded=False):
                 render_frayer_model(wv)
+                st.divider()
+                st.link_button("View full details", wv.build_url(level=wv.level_slug()))
 
 
 if __name__ == "__main__":
