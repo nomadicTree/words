@@ -50,6 +50,19 @@ class WordVersion(UrlMixin):
         self.levels = levels
         self.topics = topics
 
+    def __eq__(self, other: object):
+        if not isinstance(other, WordVersion):
+            return NotImplemented
+        return self.wv_id == other.wv_id
+
+    def __hash__(self) -> int:
+        return hash(self.wv_id)
+
+    def __lt__(self, other):
+        if not isinstance(other, WordVersion):
+            return NotImplemented
+        return self.word.lower() < other.word.lower()
+
 
 class Word(UrlMixin):
     def __init__(
@@ -65,3 +78,11 @@ class Word(UrlMixin):
         self.subject = subject
         self.versions = versions
         self.related_words = related_words
+
+    def __eq__(self, other: object):
+        if not isinstance(other, Word):
+            return NotImplemented
+        return self.word_id == other.word_id
+
+    def __hash__(self) -> int:
+        return hash(self.word_id)
