@@ -8,7 +8,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 # Base directory for all Streamlit pages
 # Always relative to this file’s directory
-PAGES_DIR = Path(__file__).resolve().parent / "pages"
+PAGES_DIR = Path(__file__).resolve().parent / "ui/pages"
 
 pages = {
     "Frayer Models": [
