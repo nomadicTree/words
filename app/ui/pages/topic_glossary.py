@@ -31,7 +31,7 @@ def main():
     page_header(PAGE_TITLE)
     all_courses = get_courses()
     course = select_course(all_courses)
-    topics = get_topics_for_course(course, has_words=True)
+    topics = get_topics_for_course(course, only_with_words=True)
     for topic in topics:
         st.subheader(topic.label)
         word_versions = get_word_versions_for_topic(topic)
@@ -39,8 +39,7 @@ def main():
         for wv in word_versions:
             with st.expander(wv.word, expanded=False):
                 render_frayer_model(wv)
-                st.divider()
-                st.link_button("View full details", wv.build_url(level=wv.level_slug()))
+                st.link_button("View full details", wv.url)
 
 
 if __name__ == "__main__":
