@@ -1,14 +1,9 @@
-import re
-from urllib.parse import quote_plus
 import streamlit as st
-from app.core.models.word_models import (
-    WordVersion,
-)  # adjust import paths as needed
 from app.core.respositories.words_repo import get_word_full
 from app.ui.components.page_header import page_header
 from app.ui.components.frayer import (
     render_frayer_model,
-)  # your rendering function
+)
 
 
 # --------------------------------------------------------------------
@@ -42,28 +37,6 @@ def get_query_param_single(name: str) -> str | None:
     if isinstance(value, list):
         return value[0]
     return value
-
-
-# --------------------------------------------------------------------
-# Label + URL helpers
-# --------------------------------------------------------------------
-def label_for_version(v: WordVersion) -> str:
-    """Return a human-readable label for a WordVersion’s levels."""
-    levels = [l.name for l in v.levels]
-    if not levels:
-        return "All levels"
-    if len(levels) == 1:
-        return levels[0]
-    if len(levels) == 2:
-        return " and ".join(levels)
-    return ", ".join(levels[:-1]) + f", and {levels[-1]}"
-
-
-def slugify_label(label: str) -> str:
-    """Convert a human-readable label into a clean, URL-safe slug."""
-    slug = re.sub(r"[ ,]+and[ ,]+", "-", label.lower())
-    slug = re.sub(r"[^a-z0-9]+", "-", slug).strip("-")
-    return quote_plus(slug)
 
 
 # --------------------------------------------------------------------
@@ -124,14 +97,14 @@ def main():
     st.markdown(f"Subject: **{word.subject.name}**")
 
     # --- determine selected key stage (from query param) ---
-    query_ks = get_query_param_single("level")
+    query_level = get_query_param_single("level")
 
-    tab_labels = [label_for_version(v) for v in word.versions]
-    tab_slugs = [slugify_label(lbl) for lbl in tab_labels]
+    tab_labels = [v.level_label() for v in word.versions]
+    tab_slugs = [v.level_slug() for v in word.versions]
 
     default_index = 0
-    if query_ks and query_ks in tab_slugs:
-        default_index = tab_slugs.index(query_ks)
+    if query_level and query_level in tab_slugs:
+        default_index = tab_slugs.index(query_level)
 
     selected_label = st.radio(
         "Key stage:",
@@ -146,7 +119,7 @@ def main():
 
     # --- find selected version ---
     version = next(
-        (v for v in word.versions if label_for_version(v) == selected_label),
+        (v for v in word.versions if v.level_label() == selected_label),
         None,
     )
 
