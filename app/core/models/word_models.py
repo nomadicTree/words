@@ -1,38 +1,38 @@
 import json
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from app.core.models.topic_model import Topic
 from app.core.models.level_model import Level
 from app.core.models.subject_model import Subject
 
 
+class UrlMixin:
+    @property
+    def url(self):
+        return f"/view?id={self.word_id}"
+
+
 @dataclass
-class RelatedWord:
+class RelatedWord(UrlMixin):
     word_id: str
     word: str
 
-    @property
-    def url(self):
-        return f"/view?id={self.word_id}"
-
 
 @dataclass
-class SearchResult:
+class SearchResult(UrlMixin):
     word_id: int
     word: str
-    subject_name: str
-    level_names: str
-
-    @property
-    def url(self):
-        return f"/view?id={self.word_id}"
+    subject: Subject
+    versions: list = field(default_factory=list)
 
 
-class WordVersion:
+class WordVersion(UrlMixin):
     def __init__(
         self,
         wv_id,
+        word,
+        word_id,
         definition,
         characteristics,
         examples,
@@ -41,6 +41,8 @@ class WordVersion:
         levels: list[Level],
     ):
         self.wv_id = wv_id
+        self.word = word
+        self.word_id = word_id
         self.definition = definition
         self.characteristics = json.loads(characteristics) or "[]"
         self.examples = json.loads(examples) or "[]"
@@ -49,7 +51,7 @@ class WordVersion:
         self.topics = topics
 
 
-class Word:
+class Word(UrlMixin):
     def __init__(
         self,
         word_id,
