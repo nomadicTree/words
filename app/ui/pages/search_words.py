@@ -26,26 +26,24 @@ def search_query(query: str):
 
 def display_search_result(result: "SearchResult") -> None:
     """Display a single search result with expanders for each WordVersion."""
-    with st.container(border=True):
-        # Header
-        st.subheader(result.word)
-        st.markdown(f"Subject: **{result.subject.name}**")
+    st.subheader(result.word)
+    st.markdown(f"Subject: **{result.subject.name}**")
 
-        for version in result.versions:
-            # Use an expander instead of a modal
-            word_version = get_word_version_by_id(version["word_version_id"])
-            with st.expander(word_version.level_label, expanded=False):
-                with st.spinner("Loading version details..."):
-                    if word_version:
-                        render_frayer_model(word_version, show_word=False)
-                    else:
-                        st.warning("Version details not found.")
+    for version in result.versions:
+        # Use an expander instead of a modal
+        word_version = get_word_version_by_id(version["word_version_id"])
+        with st.expander(word_version.level_label, expanded=False):
+            with st.spinner("Loading version details..."):
+                if word_version:
+                    render_frayer_model(word_version, show_word=False)
+                else:
+                    st.warning("Version details not found.")
 
-        st.link_button(
-            label="View full details",
-            url=result.url,
-            width="content",
-        )
+    st.link_button(
+        label="View full details",
+        url=result.url,
+        width="content",
+    )
 
 
 def display_search_results(results: list[SearchResult], query: str, elapsed: float):
@@ -63,6 +61,7 @@ def display_search_results(results: list[SearchResult], query: str, elapsed: flo
 
     for r in results:
         display_search_result(r)
+        st.divider()
 
 
 def main():
