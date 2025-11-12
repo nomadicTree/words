@@ -1,44 +1,58 @@
 import streamlit as st
 
 
-def select_item(
-    items: list,
-    key: str,
-    label: str,
-) -> object:
+def select_item(items: list, key: str, label: str):
     """
-    Generic selector that keeps Streamlit session state and query params in sync.
-
-    Args:
-        items: list of selectable objects (must have .name attribute)
-        key: short name used for query param and session key ("subject", "level", etc.)
-        label: label shown above the selectbox
-
-    Returns:
-        The selected object.
+    Generic selection helper that:
+    - stores only PKs in session_state (safe across reloads)
+    - rebuilds selected object from PK each run
+    - handles stale PKs (when filters change after reload)
+    - keeps query params in sync with the selection
     """
-    query_value = st.query_params.get(key, None)
 
-    session_key = f"selected_{key}"
-    # --- Sync query param → session state ---
-    if query_value and query_value in [i.name for i in items]:
-        matched = next(i for i in items if i.name == query_value)
-        st.session_state[session_key] = matched
+    if not items:
+        st.warning(f"No options available for {label}.")
+        return None
+
+    # Build lookup maps
+    pk_map = {item.pk: item for item in items}
+    name_map = {item.name: item for item in items}
+
+    session_key = f"selected_{key}_pk"
+    query_value = st.query_params.get(key)
+
+    # --- Sync query -> session ---
+    if query_value and query_value in name_map:
+        # URL value points to a valid item
+        st.session_state[session_key] = name_map[query_value].pk
+
     elif session_key not in st.session_state:
-        st.session_state[session_key] = items[0]
+        # No session yet -> initialise with the first item
+        st.session_state[session_key] = items[0].pk
 
-    # --- Selectbox bound to session state ---
-    selected = st.selectbox(
-        f"Select {key}",
+    # Resolve the PK we want to select
+    selected_pk = st.session_state[session_key]
+
+    # --- Handle stale PKs (hot reload or parent filter changed) ---
+    if selected_pk not in pk_map:
+        # If the previously selected item no longer exists under the new filter:
+        st.session_state[session_key] = items[0].pk
+        selected_obj = items[0]
+    else:
+        selected_obj = pk_map[selected_pk]
+
+    # --- Render the selectbox ---
+    selected_from_widget = st.selectbox(
+        label,
         items,
+        index=items.index(selected_obj),
         format_func=lambda i: i.name,
     )
 
-    # --- Sync session state → query param ---
-    if query_value != selected.name:
-        st.query_params[key] = selected.name
+    # --- Sync session -> query ---
+    if query_value != selected_from_widget.name:
+        st.session_state[session_key] = selected_from_widget.pk
+        st.query_params[key] = selected_from_widget.name
         st.rerun()
 
-    st.session_state[session_key] = selected
-
-    return selected
+    return selected_from_widget
