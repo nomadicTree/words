@@ -10,9 +10,6 @@ from app.ui.components.page_header import page_header
 from app.ui.components.frayer import render_frayer_model
 from app.ui.components.buttons import details_button
 
-# from app_lib.utils import apply_styles, render_frayer, format_time_text
-
-
 PAGE_TITLE = "Search"
 
 
@@ -78,10 +75,11 @@ def main():
         key="search_input",
     )
     st.divider()
+    query = query.strip()
 
     with st.spinner("Searching..."):
         # Perform search only if the query changed
-        if query.strip() and query != st.session_state.search_query:
+        if query and query != st.session_state.search_query:
             st.session_state.search_query = query
             if query:
                 (
