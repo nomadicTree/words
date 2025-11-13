@@ -16,6 +16,11 @@ class Topic:
     def __hash__(self) -> int:
         return hash(self.topic_id)
 
+    def __lt__(self, other: object) -> bool:
+        if not isinstance(other, Topic):
+            return NotImplemented
+        return self.code < other.code
+
     @property
     def url(self):
         subj = self.course.subject.name.replace(" ", "+")
