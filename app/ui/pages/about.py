@@ -1,9 +1,11 @@
 import streamlit as st
 from app.ui.components.page_header import page_header
 from app.ui.components.frayer import render_frayer_model
-from app.core.respositories.words_repo import get_word_full
+from app.ui.components.buttons import details_button
+from app.core.respositories.words_repo import get_word_version_by_id
 
 PAGE_TITLE = "About"
+EXAMPLE_WORD_ID = 4  # concatenation
 
 
 def main():
@@ -26,13 +28,14 @@ def main():
         """
     )
     with st.expander("Example Frayer Model", expanded=True):
-        example_word = get_word_full(4)
+        example_word = get_word_version_by_id(EXAMPLE_WORD_ID)
         render_frayer_model(
-            example_word.versions[0],
+            example_word,
             example_word.word,
             show_topics=False,
             show_related_words=False,
         )
+        details_button(example_word.url)
 
     st.subheader("Why I am building this")
     st.markdown(
@@ -68,7 +71,7 @@ def main():
     st.markdown(
         """
         FrayerStore is an open-source project—contributions are welcome!
-        For detailed information about licensing, see the [Licensing page](./license).
+        For detailed information about licensing, see the [licensing page](./license).
 
         To contribute new Frayer Models, follow these steps:
         1. Create a Frayer Model using the [Model Maker](./model_maker).
