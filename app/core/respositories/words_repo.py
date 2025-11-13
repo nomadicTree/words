@@ -1,6 +1,7 @@
 from collections import defaultdict
+from typing import Any, Iterable
+
 from app.core.db import get_db
-from typing import Any
 
 from app.core.models.course_model import Course
 from app.core.models.topic_model import Topic
@@ -97,81 +98,6 @@ def search_words(query: str, subject_id=None, topic_id=None) -> list[SearchResul
                 versions=versions,
             )
         )
-
-    return results
-
-
-def build_search_query(
-    query: str, subject_id=None, topic_id=None
-) -> tuple[str, dict[str, Any]]:
-    """Build SQL and parameters for the word search."""
-    base_query = """
-        SELECT
-            word_id,
-            word,
-            subject_id,
-            subject_name,
-            level_id,
-            level_name
-        FROM vw_WordDetails
-        WHERE word LIKE :query
-    """
-    params = {"query": f"%{query}%"}
-
-    if subject_id:
-        base_query += " AND subject_id = :subject_id"
-        params["subject_id"] = subject_id
-    if topic_id:
-        base_query += " AND topic_id = :topic_id"
-        params["topic_id"] = topic_id
-
-    base_query += " ORDER BY word COLLATE NOCASE"
-    return base_query, params
-
-
-def group_search_rows(rows) -> dict[int, dict[str, Any]]:
-    """Group DB rows by word_id and collect levels."""
-    grouped = defaultdict(
-        lambda: {"word": None, "subject_id": None, "subject_name": None, "levels": {}}
-    )
-    for r in rows:
-        word_id = r["word_id"]
-        data = grouped[word_id]
-        data["word"] = r["word"]
-        data["subject_id"] = r["subject_id"]
-        data["subject_name"] = r["subject_name"]
-        if r["level_id"] and r["level_name"]:
-            data["levels"][r["level_id"]] = Level(
-                level_id=r["level_id"],
-                name=r["level_name"],
-            )
-    return grouped
-
-
-def hydrate_search_results(grouped: dict[int, dict[str, Any]]) -> list[SearchResult]:
-    """Convert grouped data into SearchResult objects."""
-    results = []
-    for word_id, data in grouped.items():
-        results.append(
-            SearchResult(
-                word_id=word_id,
-                word=data["word"],
-                subject=Subject(data["subject_id"], data["subject_name"]),
-                levels=list(data["levels"].values()),
-            )
-        )
-    return results
-
-
-def search_words_old(query: str, subject_id=None, topic_id=None) -> list[SearchResult]:
-    """Search for words by text and optional filters, grouping levels in Python."""
-    db = get_db()
-
-    sql, params = build_search_query(query, subject_id, topic_id)
-    rows = db.execute(sql, params).fetchall()
-
-    grouped = group_search_rows(rows)
-    results = hydrate_search_results(grouped)
 
     return results
 
@@ -376,47 +302,6 @@ def get_word_full(word_id: int) -> Word:
     return Word(word_id, get_word_text(word_id), subject, versions, related_words)
 
 
-def get_word_version(
-    word_id: int, level: Level, subject: Subject
-) -> WordVersion | None:
-    """Return the WordVersion for a given word and level using WordVersionLevels."""
-    db = get_db()
-
-    q = """
-        SELECT
-            wv.id AS wv_id,
-            wv.word_id,
-            w.word AS word,
-            wv.definition,
-            wv.characteristics,
-            wv.examples,
-            wv.non_examples
-        FROM WordVersions AS wv
-        JOIN Words AS w ON wv.word_id = w.id
-        JOIN WordVersionLevels AS wvl ON wvl.word_version_id = wv.id
-        WHERE wv.word_id = :word_id
-          AND wvl.level_id = :level_id
-    """
-    params = {"word_id": word_id, "level_id": level.level_id}
-    row = db.execute(q, params).fetchone()
-    if not row:
-        return None
-
-    topics = get_word_topics_for_version(row["wv_id"], subject)
-
-    return WordVersion(
-        wv_id=row["wv_id"],
-        word=row["word"],
-        word_id=row["word_id"],
-        definition=row["definition"],
-        characteristics=row["characteristics"],
-        examples=row["examples"],
-        non_examples=row["non_examples"],
-        topics=topics,
-        levels=[level],
-    )
-
-
 def get_word_version_by_id(wv_id: int) -> WordVersion | None:
     """Return a WordVersion object with topics and levels."""
     db = get_db()
@@ -444,34 +329,9 @@ def get_word_version_by_id(wv_id: int) -> WordVersion | None:
 
     subject = Subject(row["subject_id"], row["subject_name"])
 
-    # 2️⃣ Get linked levels for this version
-    level_rows = db.execute(
-        """
-        SELECT l.id, l.name, l.description
-        FROM WordVersionLevels wvl
-        JOIN Levels l ON wvl.level_id = l.id
-        WHERE wvl.word_version_id = :wv_id
-        """,
-        {"wv_id": wv_id},
-    ).fetchall()
-
-    levels = [Level(r["id"], r["name"], r["description"]) for r in level_rows]
-
-    # 3️⃣ Get topics for this version (requires subject)
+    levels = _fetch_levels_for_version(db, wv_id)
     topics = get_word_topics_for_version(row["wv_id"], subject)
-
-    # 4️⃣ Build WordVersion object
-    return WordVersion(
-        wv_id=row["wv_id"],
-        word=row["word"],
-        word_id=row["word_id"],
-        definition=row["definition"],
-        characteristics=row["characteristics"],
-        examples=row["examples"],
-        non_examples=row["non_examples"],
-        topics=topics,
-        levels=levels,
-    )
+    return _build_word_version(row, levels, topics)
 
 
 def get_word_versions_for_topic(topic: Topic) -> list[WordVersion]:
@@ -500,34 +360,10 @@ def get_word_versions_for_topic(topic: Topic) -> list[WordVersion]:
 
     results = []
     for r in rows:
-        level_rows = db.execute(
-            """
-            SELECT l.id, l.name, l.description
-            FROM WordVersionLevels wvl
-            JOIN Levels l ON wvl.level_id = l.id
-            WHERE wvl.word_version_id = :wv_id
-            """,
-            {"wv_id": r["wv_id"]},
-        ).fetchall()
-
-        levels = [Level(l["id"], l["name"], l["description"]) for l in level_rows]
-
         subject = Subject(r["subject_id"], r["subject_name"])
+        levels = _fetch_levels_for_version(db, r["wv_id"])
         topics = get_word_topics_for_version(r["wv_id"], subject)
-
-        results.append(
-            WordVersion(
-                wv_id=r["wv_id"],
-                word=r["word"],
-                word_id=r["word_id"],
-                definition=r["definition"],
-                characteristics=r["characteristics"],
-                examples=r["examples"],
-                non_examples=r["non_examples"],
-                levels=levels,
-                topics=topics,
-            )
-        )
+        results.append(_build_word_version(r, levels, topics))
 
     return results
 
@@ -566,35 +402,40 @@ def get_word_versions_for_course(course: Course) -> list[WordVersion]:
             continue
         seen.add(wv_id)
 
-        # Fetch levels
-        level_rows = db.execute(
-            """
-            SELECT l.id, l.name, l.description
-            FROM WordVersionLevels wvl
-            JOIN Levels l ON wvl.level_id = l.id
-            WHERE wvl.word_version_id = :wv_id
-            """,
-            {"wv_id": wv_id},
-        ).fetchall()
-        levels = [Level(l["id"], l["name"], l["description"]) for l in level_rows]
-
-        # Fetch topics
         subject = Subject(r["subject_id"], r["subject_name"])
+        levels = _fetch_levels_for_version(db, wv_id)
         topics = get_word_topics_for_version(wv_id, subject)
-
-        # Build WordVersion object
-        results.append(
-            WordVersion(
-                wv_id=wv_id,
-                word=r["word"],
-                word_id=r["word_id"],
-                definition=r["definition"],
-                characteristics=r["characteristics"],
-                examples=r["examples"],
-                non_examples=r["non_examples"],
-                levels=levels,
-                topics=topics,
-            )
-        )
+        results.append(_build_word_version(r, levels, topics))
 
     return results
+
+
+def _fetch_levels_for_version(db, version_id: int) -> list[Level]:
+    """Return all levels linked to a WordVersion."""
+    rows = db.execute(
+        """
+        SELECT l.id, l.name, l.description
+        FROM WordVersionLevels wvl
+        JOIN Levels l ON wvl.level_id = l.id
+        WHERE wvl.word_version_id = :wv_id
+        """,
+        {"wv_id": version_id},
+    ).fetchall()
+    return [Level(r["id"], r["name"], r["description"]) for r in rows]
+
+
+def _build_word_version(
+    row: dict[str, Any], levels: Iterable[Level], topics: Iterable[Topic]
+) -> WordVersion:
+    """Create a WordVersion from a DB row and hydrated relationships."""
+    return WordVersion(
+        wv_id=row["wv_id"],
+        word=row["word"],
+        word_id=row["word_id"],
+        definition=row["definition"],
+        characteristics=row["characteristics"],
+        examples=row["examples"],
+        non_examples=row["non_examples"],
+        levels=list(levels),
+        topics=list(topics),
+    )
