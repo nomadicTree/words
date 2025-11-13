@@ -75,3 +75,98 @@ def select_course(available_courses: list[Course]):
     ]
     course = select_item(filtered_courses, "course", "Select course")
     return course
+
+
+def select_items(items: list, key: str, label: str):
+    """
+    Multi-select version of select_item:
+    - stores only PKs in session_state (list of PKs)
+    - syncs to/from query params (comma-separated names)
+    - handles stale/removal cases
+    - returns list of selected objects
+    """
+
+    if not items:
+        st.warning(f"No options available for {label}.")
+        return []
+
+    # Build lookup maps
+    pk_map = {item.pk: item for item in items}
+    name_map = {item.name: item for item in items}
+
+    session_key = f"selected_{key}_pks"
+    query_value = st.query_params.get(key)
+
+    # Parse query string into a list of names
+    if query_value:
+        if isinstance(query_value, list):
+            query_names = query_value
+        else:
+            query_names = query_value.split(",")
+    else:
+        query_names = []
+
+    # --- Sync query -> session ---
+    if query_names:
+        valid_items = [name_map[n] for n in query_names if n in name_map]
+        st.session_state[session_key] = [i.pk for i in valid_items]
+    elif session_key not in st.session_state:
+        st.session_state[session_key] = []
+
+    selected_pks = st.session_state[session_key]
+
+    # --- Handle stale PKs (removed or filtered out) ---
+    selected_pks = [pk for pk in selected_pks if pk in pk_map]
+    st.session_state[session_key] = selected_pks
+    selected_objs = [pk_map[pk] for pk in selected_pks]
+
+    # --- Render multi-select widget ---
+    selected_from_widget = st.multiselect(
+        label,
+        items,
+        default=selected_objs,
+        format_func=lambda i: i.name,
+    )
+
+    # --- Sync widget -> session ---
+    new_pks = [i.pk for i in selected_from_widget]
+    if set(new_pks) != set(selected_pks):
+        st.session_state[session_key] = new_pks
+        st.query_params[key] = ",".join([i.name for i in selected_from_widget])
+        st.rerun()
+
+    return selected_from_widget
+
+
+def select_courses(available_courses: list[Course]):
+    # --- 1. Multi-select subjects ---
+    all_subjects = sorted({c.subject for c in available_courses}, key=lambda s: s.name)
+    selected_subjects = select_items(all_subjects, "subjects", "Select subjects")
+
+    # If none selected, treat as "all subjects"
+    if selected_subjects:
+        subject_ids = {s.subject_id for s in selected_subjects}
+        courses_after_subject = [
+            c for c in available_courses if c.subject.subject_id in subject_ids
+        ]
+    else:
+        courses_after_subject = available_courses
+
+    # --- 2. Multi-select levels ---
+    all_levels = sorted({c.level for c in courses_after_subject}, key=lambda l: l.name)
+    selected_levels = select_items(all_levels, "levels", "Select levels")
+
+    # If none selected, treat as "all levels"
+    if selected_levels:
+        level_ids = {l.level_id for l in selected_levels}
+        courses_after_level = [
+            c for c in courses_after_subject if c.level.level_id in level_ids
+        ]
+    else:
+        courses_after_level = courses_after_subject
+
+    # --- 3. Multi-select courses ---
+    filtered_and_sorted = sorted(courses_after_level, key=lambda c: c.name)
+    selected_courses = select_items(filtered_and_sorted, "courses", "Select courses")
+
+    return selected_courses
