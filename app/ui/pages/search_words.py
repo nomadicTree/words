@@ -8,6 +8,7 @@ from app.core.utils.strings import format_time_text
 from app.core.models.word_models import SearchResult
 from app.ui.components.page_header import page_header
 from app.ui.components.frayer import render_frayer_model
+from app.ui.components.buttons import details_button
 
 # from app_lib.utils import apply_styles, render_frayer, format_time_text
 
@@ -30,7 +31,6 @@ def display_search_result(result: "SearchResult") -> None:
     st.markdown(f"Subject: **{result.subject.name}**")
 
     for version in result.versions:
-        # Use an expander instead of a modal
         word_version = get_word_version_by_id(version["word_version_id"])
         with st.expander(word_version.level_label, expanded=False):
             with st.spinner("Loading version details..."):
@@ -38,12 +38,7 @@ def display_search_result(result: "SearchResult") -> None:
                     render_frayer_model(word_version, show_word=False)
                 else:
                     st.warning("Version details not found.")
-
-    st.link_button(
-        label="View full details",
-        url=result.url,
-        width="content",
-    )
+    details_button(result.url)
 
 
 def display_search_results(results: list[SearchResult], query: str, elapsed: float):

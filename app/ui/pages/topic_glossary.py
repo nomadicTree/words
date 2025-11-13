@@ -5,6 +5,7 @@ from app.core.respositories.courses_repo import get_courses
 from app.core.respositories.topics_repo import get_topics_for_course
 from app.core.respositories.words_repo import get_word_versions_for_topic
 from app.ui.components.frayer import render_frayer_model
+from app.ui.components.buttons import details_button
 
 PAGE_TITLE = "Topic Glossary"
 
@@ -21,7 +22,7 @@ def main():
         for wv in word_versions:
             with st.expander(wv.word, expanded=False):
                 render_frayer_model(wv)
-                st.link_button("View full details", wv.url)
+                details_button(wv.url)
 
 
 if __name__ == "__main__":
