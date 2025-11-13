@@ -161,7 +161,7 @@ def main():
         levels=[],
     )
     st.subheader("Frayer preview")
-    with st.expander(preview_word.word, expanded=True):
+    with st.expander(preview_word.word, expanded=False):
         render_frayer_model(
             preview_word,
             show_topics=False,
