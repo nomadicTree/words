@@ -17,9 +17,9 @@ def main():
     topics = get_topics_for_course(course, only_with_words=True)
     for topic in topics:
         st.subheader(topic.label)
-        word_versions = get_word_versions_for_topic(topic)
-        word_versions.sort()
-        for wv in word_versions:
+        topic_word_versions = get_word_versions_for_topic(topic)
+        topic_word_versions.sort()
+        for wv in topic_word_versions:
             with st.expander(wv.word, expanded=False):
                 render_frayer_model(wv)
                 details_button(wv.url)
