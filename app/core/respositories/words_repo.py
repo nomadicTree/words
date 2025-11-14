@@ -10,96 +10,54 @@ from app.core.models.word_models import (
     Word,
     WordVersion,
     RelatedWord,
-    SearchResult,
 )
 from app.core.models.subject_model import Subject
 
 
-def search_words(query: str, subject_id=None, topic_id=None) -> list[SearchResult]:
-    """Search for words by text, returning each word with its WordVersions and associated levels."""
+def search_words(query: str, subject_id=None, topic_id=None) -> list[Word]:
+    """Return full Word objects whose words match the search query."""
     db = get_db()
 
+    # --- 1) Find matching word IDs (fast) ---
     q = """
-        SELECT
-            w.id AS word_id,
-            w.word,
-            s.name AS subject_name,
-            s.id as subject_id,
-            wv.id AS word_version_id,
-            l.id AS level_id,
-            l.name AS level_name,
-            l.description AS level_description
-        FROM Words AS w
-        JOIN Subjects AS s ON w.subject_id = s.id
-        JOIN WordVersions AS wv ON wv.word_id = w.id
-        LEFT JOIN WordVersionLevels AS wvl ON wvl.word_version_id = wv.id
-        LEFT JOIN Levels AS l ON wvl.level_id = l.id
-        WHERE w.word LIKE :query
+        SELECT id
+        FROM Words
+        WHERE word LIKE :query
     """
-
     params = {"query": f"%{query}%"}
 
     if subject_id:
-        q += " AND s.id = :subject_id"
+        q += " AND subject_id = :subject_id"
         params["subject_id"] = subject_id
+
+    q += " ORDER BY word COLLATE NOCASE"
+
+    word_ids = [row["id"] for row in db.execute(q, params).fetchall()]
+    if not word_ids:
+        return []
+
+    # --- 2) If topic filter is requested, refine IDs ---
     if topic_id:
-        q += """
-            AND wv.id IN (
-                SELECT word_version_id
-                FROM WordVersionContexts
-                WHERE topic_id = :topic_id
-            )
-        """
-        params["topic_id"] = topic_id
+        q_topic = """
+            SELECT DISTINCT w.id
+            FROM Words w
+            JOIN WordVersions wv ON wv.word_id = w.id
+            JOIN WordVersionContexts wvc ON wvc.word_version_id = wv.id
+            WHERE wvc.topic_id = :topic_id
+              AND w.id IN ({placeholders})
+        """.format(placeholders=",".join("?" for _ in word_ids))
 
-    q += " ORDER BY w.word COLLATE NOCASE"
+        rows = db.execute(q_topic, [topic_id] + word_ids).fetchall()
+        word_ids = [r["id"] for r in rows]
 
-    rows = db.execute(q, params).fetchall()
+    # --- 3) Load full Word objects ---
+    words = []
+    for wid in word_ids:
+        word_obj = get_word_full(wid)
+        if word_obj:
+            words.append(word_obj)
 
-    # 🧩 Step 1: Group by word_id
-    grouped_words = defaultdict(
-        lambda: {
-            "word": None,
-            "subject_id": None,
-            "subject_name": None,
-            "versions": defaultdict(set),
-        }
-    )
-
-    for r in rows:
-        word_id = r["word_id"]
-        wv_id = r["word_version_id"]
-
-        grouped_words[word_id]["word"] = r["word"]
-        grouped_words[word_id]["subject_id"] = r["subject_id"]
-        grouped_words[word_id]["subject_name"] = r["subject_name"]
-
-        if r["level_id"]:
-            grouped_words[word_id]["versions"][wv_id].add(
-                Level(r["level_id"], r["level_name"], r["level_description"])
-            )
-
-    # 🧩 Step 2: Build SearchResult objects
-    results = []
-    for word_id, data in grouped_words.items():
-        versions = [
-            {
-                "word_version_id": wv_id,
-                "levels": sorted(levels, key=lambda lvl: lvl.name),
-            }
-            for wv_id, levels in data["versions"].items()
-        ]
-
-        results.append(
-            SearchResult(
-                word_id=word_id,
-                word=data["word"],
-                subject=Subject(data["subject_id"], data["subject_name"]),
-                versions=versions,
-            )
-        )
-
-    return results
+    return words
 
 
 def get_related_words(word_id: int) -> list[RelatedWord]:
