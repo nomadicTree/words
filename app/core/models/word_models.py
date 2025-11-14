@@ -6,6 +6,7 @@ from urllib.parse import quote_plus
 from app.core.models.topic_model import Topic
 from app.core.models.level_model import Level
 from app.core.models.subject_model import Subject
+from app.core.models.course_model import Course
 
 
 class UrlMixin:
@@ -18,14 +19,6 @@ class UrlMixin:
 class RelatedWord(UrlMixin):
     word_id: str
     word: str
-
-
-@dataclass
-class SearchResult(UrlMixin):
-    word_id: int
-    word: str
-    subject: Subject
-    versions: list = field(default_factory=list)
 
 
 class WordVersion:
@@ -82,6 +75,10 @@ class WordVersion:
         level_param = quote_plus(self.level_label)
         return f"/view?id={self.word_id}&level={level_param}"
 
+    @property
+    def courses(self) -> set[Course]:
+        return {t.course for t in self.topics}
+
     def _ensure_list(self, value):
         # Case 1: Already a real list (preview mode)
         if isinstance(value, list):
@@ -136,3 +133,7 @@ class Word(UrlMixin):
 
     def __hash__(self) -> int:
         return hash(self.word_id)
+
+    @property
+    def courses(self) -> set[Course]:
+        return {c for v in self.versions for c in v.courses}
