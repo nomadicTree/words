@@ -108,15 +108,16 @@ def select_topics(available_courses):
 def main():
     page_header(PAGE_TITLE)
     available_courses = get_courses()
-    selected_subject, selected_courses = select_courses(available_courses)
-    selected_topics = select_topics(selected_courses)
-    st.divider()
+    with st.sidebar:
+        selected_subject, selected_courses = select_courses(available_courses)
+        selected_topics = select_topics(selected_courses)
 
     # Build YAML-ready topics
     col1, col2 = st.columns(2)
     with col1:
-        st.header("Word data input")
-        word_data = word_input_form()
+        with st.container(border=True):
+            st.markdown("**Word data input**")
+            word_data = word_input_form()
 
     yaml_levels = [course.level.name for course in selected_courses]
     word_data["levels"] = yaml_levels
@@ -138,16 +139,17 @@ def main():
     )
 
     with col2:
-        st.header("YAML preview")
-        st.code(
-            word_yaml,
-            language="yaml",
-        )
-        st.download_button(
-            "Download YAML",
-            word_yaml,
-            file_name=safe_snake_case_filename(word_data["word"], "yaml"),
-        )
+        with st.container(border=True):
+            st.markdown("**YAML preview**")
+            st.code(
+                word_yaml,
+                language="yaml",
+            )
+            st.download_button(
+                "Download YAML",
+                word_yaml,
+                file_name=safe_snake_case_filename(word_data["word"], "yaml"),
+            )
 
     preview_word = WordVersion(
         wv_id=0,
@@ -160,8 +162,7 @@ def main():
         topics=[],
         levels=[],
     )
-    st.subheader("Frayer preview")
-    with st.expander(preview_word.word, expanded=False):
+    with st.expander("**Live preview**", expanded=False):
         render_frayer_model(
             preview_word,
             show_topics=False,
