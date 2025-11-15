@@ -4,72 +4,76 @@ from app.core.models.course_model import Course
 from app.core.models.subject_model import Subject
 
 
-def select_item(items: list, key: str, label: str):
+def select_item(
+    items: list,
+    key: str,
+    label: str,
+    prefix: str = "global",
+    default_item=None,
+):
     """
-    Generic selection helper that:
-    - stores only PKs in session_state (safe across reloads)
-    - rebuilds selected object from PK each run
-    - handles stale PKs (when filters change after reload)
-    - keeps query params in sync with the selection
+    - For prefix="global":
+        * uses query params only on first initialisation
+        * keeps query params in sync with selection
+    - For prefix="view":
+        * ignores query params altogether
+        * purely session-state driven
     """
-
     if not items:
-        st.warning(f"No options available for {label}.")
+        st.warning(f"No options available for '{label}'.")
         return None
 
-    # Build lookup maps
-    pk_map = {item.pk: item for item in items}
-    name_map = {item.name: item for item in items}
+    slug_map = {item.slug: item for item in items}
+    session_key = f"{prefix}_{key}"
 
-    session_key = f"selected_{key}_pk"
-    query_value = st.query_params.get(key)
+    # Only global selectors care about query params
+    query_value = st.query_params.get(key) if prefix == "global" else None
 
-    # --- Sync query -> session ---
-    if query_value and query_value in name_map:
-        # URL value points to a valid item
-        st.session_state[session_key] = name_map[query_value].pk
+    # 1. INITIALISE: session ← query (first load) OR default
+    if session_key not in st.session_state:
+        if query_value and query_value in slug_map:
+            st.session_state[session_key] = query_value
+        elif default_item:
+            st.session_state[session_key] = default_item.slug
+        else:
+            st.session_state[session_key] = items[0].slug
 
-    elif session_key not in st.session_state:
-        # No session yet -> initialise with the first item
-        st.session_state[session_key] = items[0].pk
+    selected_slug = st.session_state[session_key]
 
-    # Resolve the PK we want to select
-    selected_pk = st.session_state[session_key]
+    # 2. STALE CHECK
+    if selected_slug not in slug_map:
+        selected_slug = default_item.slug if default_item else items[0].slug
+        st.session_state[session_key] = selected_slug
 
-    # --- Handle stale PKs (hot reload or parent filter changed) ---
-    if selected_pk not in pk_map:
-        # If the previously selected item no longer exists under the new filter:
-        st.session_state[session_key] = items[0].pk
-        selected_obj = items[0]
-    else:
-        selected_obj = pk_map[selected_pk]
+    selected_item = slug_map[selected_slug]
 
-    # --- Render the selectbox ---
+    # 3. RENDER
     selected_from_widget = st.selectbox(
         label,
         items,
-        index=items.index(selected_obj),
-        format_func=lambda i: i.name,
+        index=items.index(selected_item),
+        format_func=lambda i: i.label,
+        key=f"{prefix}_{key}_widget",
     )
 
-    # --- Sync session -> query ---
-    if query_value != selected_from_widget.name:
-        st.session_state[session_key] = selected_from_widget.pk
-        st.query_params[key] = selected_from_widget.name
-        st.rerun()
+    # 4. SESSION ← widget
+    if selected_from_widget.slug != st.session_state[session_key]:
+        st.session_state[session_key] = selected_from_widget.slug
+
+    # 5. SESSION → QUERY
+    if prefix == "global":
+        if st.query_params.get(key) != selected_from_widget.slug:
+            st.query_params[key] = selected_from_widget.slug
 
     return selected_from_widget
 
 
 def select_course(available_courses: list[Course]):
-    subjects = sorted({c.subject for c in available_courses}, key=lambda s: s.name)
-    subject = select_item(subjects, "subject", "Select subject")
+    subjects = sorted({c.subject for c in available_courses})
+    subject = select_item(items=subjects, key="subject", label="subject")
 
-    levels = sorted(
-        {c.level for c in available_courses if c.subject == subject},
-        key=lambda l: l.name,
-    )
-    level = select_item(levels, "level", "Select level")
+    levels = sorted({c.level for c in available_courses if c.subject == subject})
+    level = select_item(levels, "levels", "Select level")
 
     filtered_courses = [
         c for c in available_courses if c.subject == subject and c.level == level
@@ -78,86 +82,112 @@ def select_course(available_courses: list[Course]):
     return course
 
 
-def select_items(items: list, key: str, label: str):
+def select_items(
+    items: list,
+    key: str,
+    label: str,
+    prefix: str = "global",
+):
     """
-    Multi-select version of select_item:
-    - stores only PKs in session_state (list of PKs)
-    - syncs to/from query params (comma-separated names)
-    - handles stale/removal cases
-    - returns list of selected objects
+    Multi-select selector for Model Maker.
+    - prefix="global" means: URL only initialises state; session is authoritative.
+    - Stores slugs, not PKs.
     """
 
     if not items:
         return []
 
-    # Build lookup maps
-    pk_map = {item.pk: item for item in items}
-    name_map = {item.name: item for item in items}
+    slug_map = {item.slug: item for item in items}
+    session_key = f"{prefix}_{key}"
 
-    session_key = f"selected_{key}_pks"
-    query_value = st.query_params.get(key)
+    # GLOBAL selectors may use query params only on 1st load
+    query_value = st.query_params.get(key) if prefix == "global" else None
 
-    # Parse query string into a list of names
-    if query_value:
-        if isinstance(query_value, list):
-            query_names = query_value
-        else:
-            query_names = query_value.split(",")
+    # Parse ?levels=a,b,c → ["a", "b", "c"]
+    if isinstance(query_value, list):
+        query_slugs = query_value
+    elif isinstance(query_value, str):
+        query_slugs = [x.strip() for x in query_value.split(",") if x.strip()]
     else:
-        query_names = []
+        query_slugs = []
 
-    # --- Sync query -> session ---
-    if query_names:
-        valid_items = [name_map[n] for n in query_names if n in name_map]
-        st.session_state[session_key] = [i.pk for i in valid_items]
-    elif session_key not in st.session_state:
-        st.session_state[session_key] = []
+    # 1. INITIALISE session state
+    if session_key not in st.session_state:
+        if query_slugs:
+            valid_slugs = [s for s in query_slugs if s in slug_map]
+            st.session_state[session_key] = valid_slugs
+        else:
+            st.session_state[session_key] = []
 
-    selected_pks = st.session_state[session_key]
+    selected_slugs = st.session_state[session_key]
 
-    # --- Handle stale PKs (removed or filtered out) ---
-    selected_pks = [pk for pk in selected_pks if pk in pk_map]
-    st.session_state[session_key] = selected_pks
-    selected_objs = [pk_map[pk] for pk in selected_pks]
+    # 2. Remove stale slugs
+    selected_slugs = [s for s in selected_slugs if s in slug_map]
+    st.session_state[session_key] = selected_slugs
 
-    # --- Render multi-select widget ---
+    selected_objs = [slug_map[s] for s in selected_slugs]
+
+    # 3. Render widget (session-state drives selection)
     selected_from_widget = st.multiselect(
         label,
         items,
         default=selected_objs,
-        format_func=lambda i: i.name,
+        format_func=lambda i: i.label,
+        key=f"{prefix}_{key}_widget",
     )
 
-    # --- Sync widget -> session ---
-    new_pks = [i.pk for i in selected_from_widget]
-    if set(new_pks) != set(selected_pks):
-        st.session_state[session_key] = new_pks
-        st.query_params[key] = ",".join([i.name for i in selected_from_widget])
-        st.rerun()
+    # 4. Widget → session
+    new_slugs = [i.slug for i in selected_from_widget]
+    if set(new_slugs) != set(selected_slugs):
+        st.session_state[session_key] = new_slugs
+
+        # Update URL only for prefix='global'
+        if prefix == "global":
+            st.query_params[key] = ",".join(new_slugs)
 
     return selected_from_widget
 
 
 def select_courses(available_courses: list[Course]) -> (Subject, list[Course]):
-    # Select subject
-    all_subjects = sorted({c.subject for c in available_courses})
-    selected_subject = select_item(all_subjects, "subjects", "Select subject")
+    # 1. Select subject
+    subjects = sorted({c.subject for c in available_courses})
+    selected_subject = select_item(
+        items=subjects,
+        key="subjects",
+        label="Select subject",
+        prefix="maker",
+    )
 
-    # Multi-select levels
-    all_levels = sorted({c.level for c in available_courses})
-    selected_levels = select_items(all_levels, "levels", "Select levels")
+    # 2. Select levels (global multi-select)
+    levels = sorted(
+        {c.level for c in available_courses if c.subject == selected_subject}
+    )
+    selected_levels = select_items(
+        items=levels,
+        key="levels",
+        label="Select levels",
+        prefix="maker",
+    )
 
-    # If none selected, treat as "all levels"
+    # Convert selected Level objects to level_id set
     if selected_levels:
-        level_ids = {l.level_id for l in selected_levels}
+        selected_level_ids = {l.pk for l in selected_levels}
         courses_after_level = [
-            c for c in available_courses if c.level.level_id in level_ids
+            c
+            for c in available_courses
+            if c.subject == selected_subject and c.level.pk in selected_level_ids
         ]
     else:
+        # No levels selected → no courses selected
         courses_after_level = []
 
-    # --- 3. Multi-select courses ---
-    filtered_and_sorted = sorted(courses_after_level)
-    selected_courses = select_items(filtered_and_sorted, "courses", "Select courses")
+    # 3. Multi-select courses
+    filtered_courses = sorted(courses_after_level)
+    selected_courses = select_items(
+        items=filtered_courses,
+        key="courses",
+        label="Select courses",
+        prefix="maker",
+    )
 
     return selected_subject, selected_courses
