@@ -160,3 +160,18 @@ class Word:
     @property
     def label(self) -> str:
         return self.word
+
+    @property
+    def synonyms_str(self) -> str:
+        return (
+            ", ".join(s.lower() for s in sorted(self.synonyms)) if self.synonyms else ""
+        )
+
+    def synonyms_str_bold(self, highlight: str | None = None) -> str:
+        if not self.synonyms:
+            return ""
+        highlight = (highlight or "").lower()
+        return ", ".join(
+            f"**{s.lower()}**" if s.lower() == highlight else s.lower()
+            for s in sorted(self.synonyms)
+        )
