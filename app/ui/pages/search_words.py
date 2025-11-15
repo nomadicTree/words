@@ -6,7 +6,7 @@ from app.core.respositories.words_repo import search_words
 from app.core.utils.strings import format_time_text
 from app.core.models.word_models import Word
 from app.ui.components.page_header import page_header
-from app.ui.components.buttons import details_button
+from app.ui.components.buttons import word_details_button
 from app.ui.components.frayer import render_level_definitions
 
 PAGE_TITLE = "Search"
@@ -35,7 +35,7 @@ def display_search_result(result: Word) -> None:
         )
 
         render_level_definitions(result)
-        details_button(result.url)
+        word_details_button(result)
 
 
 def display_search_results(results: list[Word], query: str, elapsed: float):
