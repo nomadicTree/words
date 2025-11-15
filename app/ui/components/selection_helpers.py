@@ -4,6 +4,21 @@ from app.core.models.course_model import Course
 from app.core.models.subject_model import Subject
 
 
+def _sync_global_qp(key, value):
+    guard_key = f"qp_sync_guard_{key}"
+
+    # Skip if this run already handled the sync
+    if st.session_state.get(guard_key):
+        st.session_state[guard_key] = False
+        return
+
+    # Only update & rerun when necessary
+    if st.query_params.get(key) != value:
+        st.query_params[key] = value
+        st.session_state[guard_key] = True
+        st.rerun()
+
+
 def select_item(
     items: list,
     key: str,
@@ -17,37 +32,22 @@ def select_item(
     - prefix="view": ignores query params entirely.
     - Stores slugs, not PKs.
     """
-
     if not items:
         st.warning(f"No options available for '{label}'.")
         return None
 
-    # Build lookup
     slug_map = {item.slug: item for item in items}
     session_key = f"{prefix}_{key}"
 
-    # ---------------------------------------------------------
-    # STEP 1 — Query param only used for GLOBAL first init
-    # ---------------------------------------------------------
+    # --- STEP 1: qp only used on first load (global)
+    qp_slug = None
     if prefix == "global":
         qp = st.query_params.get(key)
-    else:
-        qp = None
+        qp_slug = qp[0] if isinstance(qp, list) else qp
 
-    # qp may be a string or a list; treat consistently
-    if isinstance(qp, list):
-        qp_slug = qp[0] if qp else None
-    else:
-        qp_slug = qp.strip() if isinstance(qp, str) else None
-
-    # ---------------------------------------------------------
-    # STEP 2 — Initialisation
-    # ---------------------------------------------------------
-    original_slug = st.session_state.get(session_key)
-
-    if original_slug is None:
-        # Initial load, choose the best initial value
-        if qp_slug and qp_slug in slug_map:
+    # --- STEP 2: initialise session
+    if session_key not in st.session_state:
+        if qp_slug in slug_map:
             st.session_state[session_key] = qp_slug
         elif default_item:
             st.session_state[session_key] = default_item.slug
@@ -56,19 +56,18 @@ def select_item(
 
     selected_slug = st.session_state[session_key]
 
-    # ---------------------------------------------------------
-    # STEP 3 — Clean stale values
-    # ---------------------------------------------------------
+    # --- STEP 3: clean stale
     if selected_slug not in slug_map:
-        # fallback to default or first item
         selected_slug = default_item.slug if default_item else items[0].slug
         st.session_state[session_key] = selected_slug
 
+    # --- STEP 4: sync session → query params FIRST
+    if prefix == "global":
+        _sync_global_qp(key, selected_slug)
+
     selected_obj = slug_map[selected_slug]
 
-    # ---------------------------------------------------------
-    # STEP 4 — Render selector driven by session state
-    # ---------------------------------------------------------
+    # --- STEP 5: render widget
     selected_from_widget = st.selectbox(
         label,
         items,
@@ -79,17 +78,10 @@ def select_item(
 
     new_slug = selected_from_widget.slug
 
-    # ---------------------------------------------------------
-    # STEP 5 — Update session and then query params (global only)
-    # ---------------------------------------------------------
     if new_slug != selected_slug:
         st.session_state[session_key] = new_slug
-
-    # STEP 6 — ALWAYS sync session → query params for global selectors
-    if prefix == "global":
-        st.query_params[key] = st.session_state[session_key]
-        if key not in st.query_params:
-            st.rerun()
+        if prefix == "global":
+            _sync_global_qp(key, new_slug)
 
     return selected_from_widget
 
