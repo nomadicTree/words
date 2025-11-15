@@ -21,7 +21,7 @@ def search_query(query: str):
     return results, elapsed
 
 
-def display_search_result(result: Word) -> None:
+def display_search_result(result: Word, query: str) -> None:
     """Display a single search result with expanders for each WordVersion."""
     with st.container(border=True):
         course_names = ", ".join(c.name for c in sorted(result.courses))
@@ -33,7 +33,8 @@ def display_search_result(result: Word) -> None:
         </div>
         """
         )
-
+        if result.synonyms:
+            st.write(f"Synonyms: {result.synonyms_str_bold(query)}")
         render_level_definitions(result)
         word_details_button(result)
 
@@ -52,7 +53,7 @@ def display_search_results(results: list[Word], query: str, elapsed: float):
         return
 
     for r in results:
-        display_search_result(r)
+        display_search_result(r, query)
 
 
 def main():
