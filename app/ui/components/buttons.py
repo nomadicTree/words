@@ -19,9 +19,3 @@ def wordversion_details_button(wv: WordVersion, key_prefix: str = "") -> None:
         st.session_state["view_word"] = wv.word_slug
         st.session_state["view_levels"] = wv.level_set_slug
         st.switch_page(VIEW_PAGE)
-
-
-def related_word_button(word: RelatedWord) -> None:
-    if st.button(label=word.word, key=f"related_word_{word.word_id}"):
-        st.query_params["word"] = word.slug
-        st.session_state["view_word"] = word.slug
