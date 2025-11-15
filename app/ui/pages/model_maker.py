@@ -1,6 +1,5 @@
 from typing import List
 import streamlit as st
-import json
 import yaml
 from app.ui.components.selection_helpers import select_courses
 from app.ui.components.page_header import page_header
@@ -152,9 +151,10 @@ def main():
             )
 
     preview_word = WordVersion(
-        wv_id=0,
+        pk=0,
         word=word_data["word"],
-        word_id=0,
+        word_slug=None,
+        subject_slug=None,
         definition=word_data["definition"],
         characteristics=word_data["characteristics"],
         examples=word_data["examples"],
