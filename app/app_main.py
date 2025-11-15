@@ -24,6 +24,7 @@ pages = {
             title="Course Glossary",
             icon="📖",
         ),
+        st.Page(PAGES_DIR / "view.py", title="Model Viewer", icon="🪟"),
     ],
     "Info": [
         st.Page(PAGES_DIR / "about.py", title="About", icon="ℹ️"),
@@ -33,7 +34,6 @@ pages = {
     ],
     "Utilities": [
         st.Page(PAGES_DIR / "model_maker.py", title="Model Maker", icon="🛠️"),
-        st.Page(PAGES_DIR / "view.py", title="Model Viewer", icon="🪟"),
     ],
 }
 
