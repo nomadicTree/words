@@ -15,12 +15,6 @@ def get_subjects():
     """
     rows = db.execute(q).fetchall()
 
-    subjects = [
-        Subject(
-            subject_id=r["id"],
-            name=r["name"],
-        )
-        for r in rows
-    ]
+    subjects = [Subject(pk=r["id"], name=r["name"], slug=r["slug"]) for r in rows]
 
     return subjects
