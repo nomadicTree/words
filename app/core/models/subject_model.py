@@ -5,6 +5,7 @@ from dataclasses import dataclass
 class Subject:
     pk: int
     name: str
+    slug: str
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Subject):
@@ -15,5 +16,5 @@ class Subject:
         return hash(self.pk)
 
     @property
-    def pk(self):
-        return self.pk
+    def label(self):
+        return self.name
