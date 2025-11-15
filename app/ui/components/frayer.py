@@ -148,7 +148,7 @@ def render_frayer_model(
     if show_related_words and related_words:
         st.divider()
         st.markdown("**Related words:**")
-        render_related_words(related_words, word.word_id)
+        render_related_words(related_words, word.pk)
 
     if show_topics:
         st.divider()

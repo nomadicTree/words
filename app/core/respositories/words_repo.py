@@ -90,7 +90,7 @@ def get_related_words(word_id: int) -> list[RelatedWord]:
     rows = db.execute(q, (word_id, word_id, word_id)).fetchall()
     return [
         RelatedWord(
-            pk=r["id"],
+            word_id=r["id"],
             word=r["word"],
             slug=r["slug"],
             subject_slug=r["subject_slug"],
