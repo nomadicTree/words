@@ -9,23 +9,24 @@ from app.core.models.subject_model import Subject
 from app.core.models.course_model import Course
 
 
-class UrlMixin:
-    @property
-    def url(self):
-        return f"/view?id={self.pk}"
-
-
 @dataclass
-class RelatedWord(UrlMixin):
+class RelatedWord:
     word_id: str
     word: str
+    slug: str
+    subject_slug: str
+
+    @property
+    def url(self) -> str:
+        return f"/view?subject={self.subject_slug}&word={self.slug}"
 
 
 @dataclass(eq=False, order=False)
 class WordVersion:
     pk: int
     word: str
-    word_id: int
+    word_slug: str
+    subject_slug: str
     definition: str
     characteristics: list
     examples: list
@@ -66,13 +67,29 @@ class WordVersion:
         return ", ".join(levels[:-1]) + f", and {levels[-1]}"
 
     @property
+    def level_set_slug(self) -> str:
+        parts = sorted(l.slug for l in self.levels)
+        return "-".join(parts) if parts else ""
+
+    @property
     def url(self) -> str:
-        level_param = quote_plus(self.level_label)
-        return f"/view?id={self.pk}&level={level_param}"
+        # The canonical view URL
+        if self.levels:
+            return (
+                f"/view?subject={self.subject_slug}"
+                f"&word={self.word_slug}"
+                f"&levels={self.level_set_slug}"
+            )
+        else:
+            return f"/view?subject={self.subject_slug}&word={self.word_slug}"
 
     @property
     def courses(self) -> set[Course]:
         return {t.course for t in self.topics}
+
+    @property
+    def label(self) -> str:
+        return self.word
 
     def _ensure_list(self, value):
         # Case 1: Already a real list (preview mode)
@@ -101,10 +118,19 @@ class WordVersionChoice:
     def name(self) -> str:
         return self.version.level_label
 
+    @property
+    def slug(self) -> str:
+        return self.version.level_set_slug
+
+    @property
+    def label(self) -> str:
+        return self.version.level_label
+
 
 @dataclass(eq=False, order=False)
-class Word(UrlMixin):
+class Word:
     pk: int
+    slug: str
     word: str
     subject: Subject
     versions: list[WordVersion]
@@ -126,3 +152,11 @@ class Word(UrlMixin):
     @property
     def courses(self) -> set[Course]:
         return {c for v in self.versions for c in v.courses}
+
+    @property
+    def url(self) -> str:
+        return f"/view?subject={self.subject.slug}&word={self.slug}"
+
+    @property
+    def label(self) -> str:
+        return self.word
