@@ -1,116 +1,242 @@
 import streamlit as st
-from app.core.models.word_models import WordVersionChoice, WordVersion
-from app.core.respositories.words_repo import get_word_full
+from app.core.models.word_models import WordVersionChoice
+from app.core.respositories.words_repo import (
+    get_word_by_word_slug_and_subject_slug,
+)
 from app.ui.components.page_header import page_header
 from app.ui.components.selection_helpers import select_item
-from app.ui.components.frayer import (
-    render_frayer_model,
-)
+from app.ui.components.frayer import render_frayer_model
 
 
-# --------------------------------------------------------------------
-# Query parameter utilities
-# --------------------------------------------------------------------
-def get_word_from_query_params():
-    """Extract the 'id' parameter from the query string and return the Word object."""
-    id_param = st.query_params.get("id")
+# ---------------------------------------------------------------
+# Session + Query Params Sync Helpers
+# ---------------------------------------------------------------
+def sync_param(key: str, default: str | None = None) -> str | None:
+    """Synchronize a single parameter between session_state and query_params.
+    Returns the resolved value."""
+    qp = st.query_params
 
-    if id_param is None:
-        st.info("No id given in URL. Are you here accidentally?")
-        return None
+    # Case 1: Query param wins if present
+    if key in qp and qp[key]:
+        st.session_state[f"view_{key}"] = qp[key]
+        return qp[key]
 
-    try:
-        word_id = int(id_param)
-    except ValueError:
-        st.error("Invalid id in URL")
+    # Case 2: Session state wins if present
+    if f"view_{key}" in st.session_state:
+        value = st.session_state[f"view_{key}"]
+        st.query_params[key] = value
+        return value
+
+    # Case 3: Nothing set
+    if default is not None:
+        st.session_state[f"view_{key}"] = default
+        st.query_params[key] = default
+        return default
+
+    return None
+
+
+# ---------------------------------------------------------------
+# Load word based on slugs
+# ---------------------------------------------------------------
+def load_word_from_state():
+    qp = st.query_params
+
+    # ---------------------------------------------------
+    # 1. QUERY PARAMS → SESSION (only if non-empty)
+    # ---------------------------------------------------
+    if "subject" in qp and qp["subject"]:
+        st.session_state["view_subject"] = qp["subject"]
+
+    if "word" in qp and qp["word"]:
+        st.session_state["view_word"] = qp["word"]
+
+    if "levels" in qp and qp["levels"]:
+        st.session_state["view_levels"] = qp["levels"]
+
+    # ---------------------------------------------------
+    # 2. Now ensure session_state has the required fields
+    # ---------------------------------------------------
+    subject_slug = st.session_state.get("view_subject")
+    word_slug = st.session_state.get("view_word")
+    levels_slug = st.session_state.get("view_levels")
+
+    if not subject_slug or not word_slug:
+        st.error("No word selected.")
         st.stop()
 
-    word = get_word_full(word_id)
-    if word is None:
-        st.error(f"No word found with id {word_id}")
+    # ---------------------------------------------------
+    # 3. SESSION → QUERY PARAMS (write but do NOT rerun)
+    #    This keeps the URL in sync *after switch_page()*
+    # ---------------------------------------------------
+    if st.query_params.get("subject") != subject_slug:
+        st.query_params["subject"] = subject_slug
+
+    if st.query_params.get("word") != word_slug:
+        st.query_params["word"] = word_slug
+
+    if levels_slug:
+        if st.query_params.get("levels") != levels_slug:
+            st.query_params["levels"] = levels_slug
+    else:
+        if "levels" in st.query_params:
+            st.query_params.pop("levels")
+
+    # ---------------------------------------------------
+    # 4. Lookup word by slug
+    # ---------------------------------------------------
+
+    word = get_word_by_word_slug_and_subject_slug(word_slug, subject_slug)
+    if not word:
+        st.error(f"Word not found: {word_slug} in {subject_slug}")
         st.stop()
 
-    return word
+    return word, levels_slug
 
 
-def get_query_param_single(name: str) -> str | None:
-    """Safely extract a single value from Streamlit's query parameters."""
-    value = st.query_params.get(name)
-    if isinstance(value, list):
-        return value[0]
-    return value
+def init_view_levels(choices: list["WordVersionChoice"], levels_slug: str | None):
+    """
+    Initialise view_levels if missing:
+      1. URL slug (if valid for this word)
+      2. global_levels (if valid for this word)
+      3. first choice
+    """
+    if "view_levels" in st.session_state:
+        return
+
+    # 1. URL param
+    if levels_slug and any(c.slug == levels_slug for c in choices):
+        st.session_state["view_levels"] = levels_slug
+        return
+
+    # 2. global_levels
+    global_level = st.session_state.get("global_levels")
+    if global_level and any(c.slug == global_level for c in choices):
+        st.session_state["view_levels"] = global_level
+        return
+
+    # 3. fallback
+    st.session_state["view_levels"] = choices[0].slug
 
 
-# --------------------------------------------------------------------
-# Sidebar rendering
-# --------------------------------------------------------------------
-def render_sidebar(word) -> (WordVersion, dict):
-    """Render sidebar controls and return user display preferences."""
+def sync_view_to_global_if_valid():
+    """
+    After rendering the widget:
+    If the selected view-level is a *single* level (KS4/KS5),
+    update global_levels to match.
+    """
+    view_level = st.session_state.get("view_levels")
+
+    if view_level and "-" not in view_level:
+        st.session_state["global_levels"] = view_level
+
+
+def sync_global_to_view_if_valid(versions):
+    """
+    Before rendering the widget:
+    If global and view differ, and global matches a version,
+    set view = global.
+    """
+    global_level = st.session_state.get("global_levels")
+    view_level = st.session_state.get("view_levels")
+
+    if not global_level:
+        return
+
+    if view_level == global_level:
+        return
+
+    for v in versions:
+        if v.slug == global_level:
+            st.session_state["view_levels"] = global_level
+            return
+
+
+def choose_version_for_word(word, levels_slug):
+    """
+    Orchestrates:
+      - init view_levels
+      - sync global -> view
+      - render selector (view-only)
+      - sync view -> global
+    Returns the chosen WordVersion.
+    """
+    choices = [WordVersionChoice(v) for v in word.versions]
+
+    # 1. initial view_level (from URL/global/first)
+    init_view_levels(choices, levels_slug)
+
+    # 2. global -> view (if compatible)
+    sync_global_to_view_if_valid(choices)
+
+    # 3. render selector (view namespace; ignores query params)
+    selected_choice = select_item(
+        items=choices,
+        key="levels",
+        label="Select level",
+        prefix="view",
+    )
+
+    # 4. persist chosen view_level + mirror in URL
+    st.session_state["view_levels"] = selected_choice.slug
+    st.query_params["levels"] = selected_choice.slug
+
+    # 5. view -> global (if single-level)
+    sync_view_to_global_if_valid()
+
+    return selected_choice.version
+
+
+# ---------------------------------------------------------------
+# Sidebar controls
+# ---------------------------------------------------------------
+def render_sidebar(word, levels_slug):
+    """Return (version, display options)."""
+
     with st.sidebar:
-        choices = [WordVersionChoice(v) for v in word.versions]
-        selected_level = select_item(items=choices, key="level", label="Select level")
-        version = selected_level.version
+        version = choose_version_for_word(word, levels_slug)
+        # Update URL when user selects a different level
+        st.query_params["levels"] = version.level_set_slug
+        st.session_state["view_levels"] = version.level_set_slug
+        sync_view_to_global_if_valid()
 
         st.write("Toggle visibility:")
         options = {
-            "show_word": st.checkbox("Word", value=True, key="show_word"),
-            "show_definition": st.checkbox(
-                "Definition", value=True, key="show_definition"
-            ),
-            "show_characteristics": st.checkbox(
-                "Characteristics", value=True, key="show_characteristics"
-            ),
-            "show_examples": st.checkbox("Examples", value=True, key="show_examples"),
-            "show_non_examples": st.checkbox(
-                "Non-examples", value=True, key="show_non_examples"
-            ),
-            # placeholders; will fill below
-            "show_related_words": False,
-            "show_topics": False,
+            "show_word": st.checkbox("Word", True),
+            "show_definition": st.checkbox("Definition", True),
+            "show_characteristics": st.checkbox("Characteristics", True),
+            "show_examples": st.checkbox("Examples", True),
+            "show_non_examples": st.checkbox("Non-examples", True),
+            "show_related_words": st.checkbox("Related words", True)
+            if word.related_words
+            else False,
+            "show_topics": st.checkbox("Topics", True),
         }
-
-        # --- Related words BEFORE Topics ---
-        if word.related_words:
-            options["show_related_words"] = st.checkbox(
-                "Related words",
-                value=True,
-                key="show_related_words",
-            )
-
-        options["show_topics"] = st.checkbox(
-            "Topics",
-            value=True,
-            key="show_topics",
-        )
 
         return version, options
 
 
-# --------------------------------------------------------------------
-# Main view
-# --------------------------------------------------------------------
+# ---------------------------------------------------------------
+# Main View
+# ---------------------------------------------------------------
 def main():
-    word = get_word_from_query_params()
-    if word is None:
-        st.stop()
+    word, levels_slug = load_word_from_state()
 
-    version, view_options = render_sidebar(word)
+    page_header("Frayer Model", f"**{word.subject.name}**")
 
-    displayed_word_header = version.word if view_options["show_word"] else "❓"
-    page_header("Frayer Model", f"**{word.subject.name}:** {displayed_word_header}")
+    version, view_opts = render_sidebar(word, levels_slug)
 
-    if version:
-        render_frayer_model(
-            version,
-            show_word=view_options["show_word"],
-            related_words=word.related_words,
-            show_topics=view_options["show_topics"],
-            show_definition=view_options["show_definition"],
-            show_characteristics=view_options["show_characteristics"],
-            show_examples=view_options["show_examples"],
-            show_non_examples=view_options["show_non_examples"],
-            show_related_words=view_options["show_related_words"],
-        )
+    render_frayer_model(
+        version,
+        show_word=view_opts["show_word"],
+        related_words=word.related_words,
+        show_topics=view_opts["show_topics"],
+        show_definition=view_opts["show_definition"],
+        show_characteristics=view_opts["show_characteristics"],
+        show_examples=view_opts["show_examples"],
+        show_non_examples=view_opts["show_non_examples"],
+        show_related_words=view_opts["show_related_words"],
+    )
 
 
 if __name__ == "__main__":
