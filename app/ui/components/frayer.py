@@ -54,7 +54,7 @@ def render_topics(word_version: WordVersion):
         hide_index=True,
         column_order=("course", "label", "topic_url"),
         column_config=column_config,
-        key=f"topic_frame_{word_version.wv_id}",
+        key=f"topic_frame_{word_version.pk}",
     )
 
 
