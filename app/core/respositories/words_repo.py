@@ -26,9 +26,14 @@ def search_words(query: str, subject_id=None, topic_id=None) -> list[Word]:
     db = get_db()
 
     q = """
-        SELECT id
-        FROM Words
-        WHERE word LIKE :query
+        SELECT DISTINCT
+            w.id
+        FROM Words w
+        LEFT JOIN Synonyms syn on syn.word_id = w.id
+        WHERE
+            word LIKE :query
+            OR syn.synonym like :query
+
     """
     params = {"query": f"%{query}%"}
 
@@ -277,6 +282,13 @@ def get_word_text_and_slug(word_id: int) -> tuple[str, str] | None:
     return row["word"], row["slug"]
 
 
+def get_synonyms_for_word(word_id: int) -> list[str]:
+    db = get_db()
+    q = "SELECT synonym FROM Synonyms WHERE word_id = ? ORDER BY synonym COLLATE NOCASE"
+    rows = db.execute(q, (word_id,)).fetchall()
+    return [r["synonym"] for r in rows]
+
+
 # ============================================================
 # FULL WORD OBJECT
 # ============================================================
@@ -299,6 +311,7 @@ def get_word_full(word_id: int) -> Word | None:
         version.topics = get_word_topics_for_version(version.pk, subject)
 
     related_words = get_related_words(word_id)
+    synonyms = get_synonyms_for_word(word_id)
 
     return Word(
         pk=word_id,
@@ -307,6 +320,7 @@ def get_word_full(word_id: int) -> Word | None:
         subject=subject,
         versions=versions,
         related_words=related_words,
+        synonyms=synonyms,
     )
 
 
