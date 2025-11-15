@@ -1,7 +1,7 @@
 import streamlit as st
 from app.ui.components.page_header import page_header
 from app.ui.components.frayer import render_frayer_model
-from app.ui.components.buttons import details_button
+from app.ui.components.buttons import wordversion_details_button
 from app.core.respositories.words_repo import get_word_version_by_id
 
 PAGE_TITLE = "About"
@@ -35,7 +35,7 @@ def main():
             show_topics=False,
             show_related_words=False,
         )
-        details_button(example_word.url)
+        wordversion_details_button(example_word)
 
     st.subheader("Why I am building this")
     st.markdown(
