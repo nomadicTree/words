@@ -7,6 +7,7 @@ from app.core.models.level_model import Level
 class Course:
     pk: int
     name: str
+    slug: str
     subject: Subject
     level: Level
 
@@ -25,3 +26,7 @@ class Course:
             return self.level < other.level
 
         return self.name.lower() < other.name.lower()
+
+    @property
+    def label(self) -> str:
+        return self.name
