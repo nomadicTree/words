@@ -8,32 +8,26 @@ from app.ui.components.selection_helpers import select_item
 from app.ui.components.frayer import render_frayer_model
 
 
-# ---------------------------------------------------------------
-# Session + Query Params Sync Helpers
-# ---------------------------------------------------------------
-def sync_param(key: str, default: str | None = None) -> str | None:
-    """Synchronize a single parameter between session_state and query_params.
-    Returns the resolved value."""
-    qp = st.query_params
+def safe_sync_qp(key: str, value: str | None) -> None:
+    guard = f"_qp_guard_{key}"
 
-    # Case 1: Query param wins if present
-    if key in qp and qp[key]:
-        st.session_state[f"view_{key}"] = qp[key]
-        return qp[key]
+    if st.session_state.get(guard):
+        st.session_state[guard] = False
+        return
 
-    # Case 2: Session state wins if present
-    if f"view_{key}" in st.session_state:
-        value = st.session_state[f"view_{key}"]
+    current = st.query_params.get(key)
+
+    if value is None:
+        if current is not None:
+            st.query_params.pop(key, None)
+            st.session_state[guard] = True
+            st.rerun()
+        return
+
+    if current != value:
         st.query_params[key] = value
-        return value
-
-    # Case 3: Nothing set
-    if default is not None:
-        st.session_state[f"view_{key}"] = default
-        st.query_params[key] = default
-        return default
-
-    return None
+        st.session_state[guard] = True
+        st.rerun()
 
 
 # ---------------------------------------------------------------
@@ -70,17 +64,17 @@ def load_word_from_state():
     #    This keeps the URL in sync *after switch_page()*
     # ---------------------------------------------------
     if st.query_params.get("subject") != subject_slug:
-        st.query_params["subject"] = subject_slug
+        safe_sync_qp("subject", subject_slug)
 
     if st.query_params.get("word") != word_slug:
-        st.query_params["word"] = word_slug
+        safe_sync_qp("word", word_slug)
 
     if levels_slug:
         if st.query_params.get("levels") != levels_slug:
-            st.query_params["levels"] = levels_slug
+            safe_sync_qp("levels", levels_slug)
     else:
         if "levels" in st.query_params:
-            st.query_params.pop("levels")
+            safe_sync_qp("levels", None)
 
     # ---------------------------------------------------
     # 4. Lookup word by slug
@@ -170,7 +164,7 @@ def choose_version_for_word(word, levels_slug):
     sync_global_to_view_if_valid(choices)
 
     # 3. render selector (view namespace; ignores query params)
-    selected_choice = select_item(
+    selected_level = select_item(
         items=choices,
         key="levels",
         label="Select level",
@@ -178,13 +172,13 @@ def choose_version_for_word(word, levels_slug):
     )
 
     # 4. persist chosen view_level + mirror in URL
-    st.session_state["view_levels"] = selected_choice.slug
-    st.query_params["levels"] = selected_choice.slug
+    st.session_state["view_levels"] = selected_level.slug
+    safe_sync_qp("levels", selected_level.slug)
 
     # 5. view -> global (if single-level)
     sync_view_to_global_if_valid()
 
-    return selected_choice.version
+    return selected_level.version
 
 
 # ---------------------------------------------------------------
@@ -195,8 +189,7 @@ def render_sidebar(word, levels_slug):
 
     with st.sidebar:
         version = choose_version_for_word(word, levels_slug)
-        # Update URL when user selects a different level
-        st.query_params["levels"] = version.level_set_slug
+        # Update session state
         st.session_state["view_levels"] = version.level_set_slug
         sync_view_to_global_if_valid()
 
