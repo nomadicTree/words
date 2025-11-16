@@ -2,7 +2,7 @@ from app.core.db import get_db
 from app.core.models.level_model import Level
 
 
-def get_levels() -> list[Level]:
+def get_all_levels() -> list[Level]:
     """Get all Levels
 
     Returns:
