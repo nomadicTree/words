@@ -110,3 +110,48 @@ LEFT JOIN WordVersionContexts wvc ON wvc.word_version_id = wv.id
 LEFT JOIN Topics t ON wvc.topic_id = t.id
 
 LEFT JOIN Courses c ON t.course_id = c.id;
+
+-- Search view --
+CREATE VIEW vw_SearchWordVersions AS
+SELECT
+    w.id AS word_id,
+    w.word AS word,
+    w.slug AS word_slug,
+
+    sub.id AS subject_id,
+    sub.name AS subject_name,
+    sub.slug AS subject_slug,
+
+    -- synonyms (comma-separated, distinct)
+    GROUP_CONCAT(DISTINCT syn.synonym) AS synonyms,
+
+    -- searchable text: word + synonyms (spaces)
+    w.word || ' ' ||
+    COALESCE(REPLACE(GROUP_CONCAT(DISTINCT syn.synonym), ',', ' '), '')
+    AS search_text,
+
+    v.id AS version_id,
+    v.definition AS version_definition,
+
+    -- level names (comma-separated; DISTINCT allowed, ORDER BY not allowed)
+    GROUP_CONCAT(DISTINCT lvl.name) AS level_names
+
+FROM Words w
+JOIN Subjects sub
+    ON sub.id = w.subject_id
+
+LEFT JOIN Synonyms syn
+    ON syn.word_id = w.id
+
+JOIN WordVersions v
+    ON v.word_id = w.id
+
+JOIN WordVersionLevels wvl
+    ON wvl.word_version_id = v.id
+
+JOIN Levels lvl
+    ON lvl.id = wvl.level_id
+
+GROUP BY
+    w.id,
+    v.id;
