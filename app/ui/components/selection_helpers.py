@@ -19,7 +19,7 @@ def _sync_global_qp(key, value):
         st.rerun()
 
 
-def select_item(
+def select_one(
     items: list,
     key: str,
     label: str,
@@ -88,19 +88,19 @@ def select_item(
 
 def select_course(available_courses: list[Course]):
     subjects = sorted({c.subject for c in available_courses})
-    subject = select_item(items=subjects, key="subject", label="Subject")
+    subject = select_one(items=subjects, key="subject", label="Subject")
 
     levels = sorted({c.level for c in available_courses if c.subject == subject})
-    level = select_item(levels, "levels", "Select level")
+    level = select_one(levels, "levels", "Select level")
 
     filtered_courses = [
         c for c in available_courses if c.subject == subject and c.level == level
     ]
-    course = select_item(filtered_courses, "course", "Select course")
+    course = select_one(filtered_courses, "course", "Select course")
     return course
 
 
-def select_items(
+def select_many(
     items: list,
     key: str,
     label: str,
@@ -172,7 +172,7 @@ def select_items(
 def select_courses(available_courses: list[Course]) -> (Subject, list[Course]):
     # 1. Select subject
     subjects = sorted({c.subject for c in available_courses})
-    selected_subject = select_item(
+    selected_subject = select_one(
         items=subjects,
         key="subjects",
         label="Select subject",
@@ -183,7 +183,7 @@ def select_courses(available_courses: list[Course]) -> (Subject, list[Course]):
     levels = sorted(
         {c.level for c in available_courses if c.subject == selected_subject}
     )
-    selected_levels = select_items(
+    selected_levels = select_many(
         items=levels,
         key="levels",
         label="Select levels",
@@ -204,7 +204,7 @@ def select_courses(available_courses: list[Course]) -> (Subject, list[Course]):
 
     # 3. Multi-select courses
     filtered_courses = sorted(courses_after_level)
-    selected_courses = select_items(
+    selected_courses = select_many(
         items=filtered_courses,
         key="courses",
         label="Select courses",
