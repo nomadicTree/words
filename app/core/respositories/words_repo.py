@@ -15,59 +15,6 @@ from app.core.models.word_models import (
 )
 from app.core.models.subject_model import Subject
 
-
-# ============================================================
-# SEARCH
-# ============================================================
-
-
-def search_words(query: str, subject_id=None, topic_id=None) -> list[Word]:
-    """Return full Word objects whose words match the search query."""
-    db = get_db()
-
-    q = """
-        SELECT DISTINCT
-            w.id
-        FROM Words w
-        LEFT JOIN Synonyms syn on syn.word_id = w.id
-        WHERE
-            word LIKE :query
-            OR syn.synonym like :query
-
-    """
-    params = {"query": f"%{query}%"}
-
-    if subject_id:
-        q += " AND subject_id = :subject_id"
-        params["subject_id"] = subject_id
-
-    q += " ORDER BY word COLLATE NOCASE"
-
-    word_ids = [row["id"] for row in db.execute(q, params).fetchall()]
-    if not word_ids:
-        return []
-
-    if topic_id:
-        q_topic = f"""
-            SELECT DISTINCT w.id
-            FROM Words w
-            JOIN WordVersions wv ON wv.word_id = w.id
-            JOIN WordVersionContexts wvc ON wvc.word_version_id = wv.id
-            WHERE wvc.topic_id = :topic_id
-              AND w.id IN ({",".join("?" for _ in word_ids)})
-        """
-        rows = db.execute(q_topic, [topic_id] + word_ids).fetchall()
-        word_ids = [r["id"] for r in rows]
-
-    words = []
-    for wid in word_ids:
-        word_obj = get_word_full(wid)
-        if word_obj:
-            words.append(word_obj)
-
-    return words
-
-
 # ============================================================
 # RELATED WORDS
 # ============================================================
