@@ -88,7 +88,7 @@ def select_item(
 
 def select_course(available_courses: list[Course]):
     subjects = sorted({c.subject for c in available_courses})
-    subject = select_item(items=subjects, key="subject", label="subject")
+    subject = select_item(items=subjects, key="subject", label="Subject")
 
     levels = sorted({c.level for c in available_courses if c.subject == subject})
     level = select_item(levels, "levels", "Select level")
