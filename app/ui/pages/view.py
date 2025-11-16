@@ -4,7 +4,7 @@ from app.core.respositories.words_repo import (
     get_word_by_word_slug_and_subject_slug,
 )
 from app.ui.components.page_header import page_header
-from app.ui.components.selection_helpers import select_item
+from app.ui.components.selection_helpers import select_one
 from app.ui.components.frayer import render_frayer_model
 
 
@@ -164,7 +164,7 @@ def choose_version_for_word(word, levels_slug):
     sync_global_to_view_if_valid(choices)
 
     # 3. render selector (view namespace; ignores query params)
-    selected_level = select_item(
+    selected_level = select_one(
         items=choices,
         key="levels",
         label="Select level",
