@@ -14,7 +14,7 @@ def main():
     all_courses = get_courses()
     with st.sidebar:
         course = select_course(all_courses)
-    page_header(PAGE_TITLE, f"**{course.subject.name}:** {course.name}")
+    page_header(PAGE_TITLE)
     topics = get_topics_for_course(course, only_with_words=True)
     for i, topic in enumerate(topics):
         st.subheader(topic.label)

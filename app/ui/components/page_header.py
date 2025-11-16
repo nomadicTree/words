@@ -35,12 +35,10 @@ def inject_styles():
     )
 
 
-def page_header(title: str = "", caption: str = ""):
+def page_header(title: str = "") -> None:
     inject_styles()
     if title:
         st.title(title)
-        if caption:
-            st.caption(caption)
         st.divider()
     else:
         st.title("FrayerStore")

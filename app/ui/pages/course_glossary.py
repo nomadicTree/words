@@ -14,7 +14,7 @@ def main():
     with st.sidebar:
         course = select_course(all_courses)
 
-    page_header(PAGE_TITLE, f"**{course.subject.name}:** {course.name}")
+    page_header(PAGE_TITLE)
 
     course_word_versions = get_word_versions_for_course(course)
     course_word_versions.sort()

@@ -7,6 +7,8 @@ from app.ui.components.page_header import page_header
 from app.ui.components.selection_helpers import select_one
 from app.ui.components.frayer import render_frayer_model
 
+PAGE_TITLE = "Model Viewer"
+
 
 def safe_sync_qp(key: str, value: str | None) -> None:
     guard = f"_qp_guard_{key}"
@@ -215,7 +217,7 @@ def render_sidebar(word, levels_slug):
 def main():
     word, levels_slug = load_word_from_state()
 
-    page_header("Frayer Model", f"**{word.subject.name}**")
+    page_header(PAGE_TITLE)
 
     version, view_opts = render_sidebar(word, levels_slug)
 
