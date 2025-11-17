@@ -5,7 +5,7 @@ from app.core.respositories.words_repo import (
 )
 from app.ui.components.page_header import page_header
 from app.ui.components.selection_helpers import select_one
-from app.ui.components.frayer import render_frayer_model
+from app.ui.components.frayer import render_frayer_model, render_related_words
 
 PAGE_TITLE = "Model Viewer"
 
@@ -195,21 +195,19 @@ def render_sidebar(word, levels_slug):
         st.session_state["view_levels"] = version.level_set_slug
         sync_view_to_global_if_valid()
 
-        st.divider()
+        with st.expander(label="Display Options", expanded=False):
+            options = {
+                "show_word": st.checkbox("Word", True),
+                "show_definition": st.checkbox("Definition", True),
+                "show_characteristics": st.checkbox("Characteristics", True),
+                "show_examples": st.checkbox("Examples", True),
+                "show_non_examples": st.checkbox("Non-examples", True),
+                "show_topics": st.checkbox("Topics", True),
+            }
 
-        st.write("Visibility:")
-        options = {
-            "show_word": st.checkbox("Word", True),
-            "show_definition": st.checkbox("Definition", True),
-            "show_characteristics": st.checkbox("Characteristics", True),
-            "show_examples": st.checkbox("Examples", True),
-            "show_non_examples": st.checkbox("Non-examples", True),
-            "show_related_words": st.checkbox("Related words", True)
-            if word.related_words
-            else False,
-            "show_topics": st.checkbox("Topics", True),
-        }
-
+        if word.related_words:
+            with st.expander(label="Related Words", expanded=False):
+                render_related_words(word.related_words)
         return version, options
 
 
@@ -232,7 +230,6 @@ def main():
         show_characteristics=view_opts["show_characteristics"],
         show_examples=view_opts["show_examples"],
         show_non_examples=view_opts["show_non_examples"],
-        show_related_words=view_opts["show_related_words"],
     )
 
 
