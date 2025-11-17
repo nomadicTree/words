@@ -41,7 +41,7 @@ examples:
         return self.get_balance() # methods can return values
   ```
 non_examples:
-- 'Class: defines the blueprint of an entire object, not just its behaviour'
+- 'Class: defines the template of an entire object, not just its behaviour'
 - 'Attributes: these are data associated with a class'
 topics:
 - course: OCR H446
