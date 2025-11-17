@@ -1,0 +1,16 @@
+word: instantiate
+definition: To create an object from a class.
+characteristics:
+- Creates a new object in memory using a class as a template
+- Calls the class constructor to set the object's initial state
+examples:
+- 'Instantiating a `Person` object (Python): `q = Person("Quintin")`'
+non_examples:
+- 'Initialising a variable (Python): `x = 5`'
+- 'Declaring a variable (C): `int x;`'
+levels:
+- KS5
+topics:
+- course: OCR H446
+  codes:
+  - 2.2.1
