@@ -7,8 +7,8 @@ from app.ui.components.buttons import wordversion_details_button
 
 def wordversion_expander(wv: WordVersion, key_prefix: str = "") -> None:
     with st.expander(wv.word, expanded=False):
-        render_frayer_model(wv)
         wordversion_details_button(wv, key_prefix)
+        render_frayer_model(wv)
 
 
 def render_related_words(related_words: list[RelatedWord]) -> None:
