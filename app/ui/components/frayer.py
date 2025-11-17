@@ -11,22 +11,11 @@ def wordversion_expander(wv: WordVersion, key_prefix: str = "") -> None:
         wordversion_details_button(wv, key_prefix)
 
 
-def render_related_words(related_words: list[RelatedWord], word_id: int):
-    related_word_data = [{"word": w.word, "url": w.url} for w in related_words]
-    words_frame = pd.DataFrame(related_word_data)
-    column_config = {
-        "word": st.column_config.Column("Word", width="auto"),
-        "url": st.column_config.LinkColumn(
-            "Link", width="auto", display_text="Go to Frayer Model"
-        ),
-    }
-    st.dataframe(
-        words_frame,
-        hide_index=True,
-        column_order=("word", "url"),
-        column_config=column_config,
-        key=f"related_words_{word_id}",
-    )
+def render_related_words(related_words: list[RelatedWord]) -> None:
+    for rw in related_words:
+        if st.button(label=rw.word, key=rw.word_id, width="stretch"):
+            st.session_state.view_word = rw.slug
+            st.switch_page("ui/pages/view.py")
 
 
 def render_topics(word_version: WordVersion):
@@ -120,7 +109,6 @@ def render_frayer_model(
     show_examples=True,
     show_characteristics=True,
     show_non_examples=True,
-    show_related_words=False,
 ):
     col1, col2 = st.columns(2, border=True)
     with col1:
@@ -151,11 +139,6 @@ def render_frayer_model(
             render_list(word.non_examples)
         else:
             blank_box()
-
-    if show_related_words and related_words:
-        st.divider()
-        st.markdown("**Related words:**")
-        render_related_words(related_words, word.pk)
 
     if show_topics:
         st.divider()
