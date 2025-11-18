@@ -1,6 +1,6 @@
 import streamlit as st
 from app.core.models.word_models import WordVersionChoice
-from app.core.respositories.words_repo import (
+from app.core.repositories.words_repo import (
     get_word_by_word_slug_and_subject_slug,
 )
 from app.ui.components.page_header import page_header

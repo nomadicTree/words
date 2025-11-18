@@ -1,9 +1,9 @@
 import streamlit as st
 import string
 from app.ui.components.page_header import page_header
-from app.core.respositories.courses_repo import get_courses
+from app.core.repositories.courses_repo import get_courses
 from app.ui.components.selection_helpers import select_course
-from app.core.respositories.words_repo import get_word_versions_for_course
+from app.core.repositories.words_repo import get_word_versions_for_course
 from app.ui.components.frayer import wordversion_expander
 
 PAGE_TITLE = "Course Glossary"

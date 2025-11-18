@@ -8,8 +8,8 @@ from app.core.utils.strings import format_time_text
 from app.ui.components.page_header import page_header
 from app.ui.components.buttons import searchhit_details_button
 from app.services.search.search_models import SearchFilters, SearchHit
-from app.core.respositories.subjects_repo import get_all_subjects
-from app.core.respositories.levels_repo import get_all_levels
+from app.core.repositories.subjects_repo import get_all_subjects
+from app.core.repositories.levels_repo import get_all_levels
 from app.services.search.search_service import get_subject_level_map
 from app.ui.components.selection_helpers import select_one
 

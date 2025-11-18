@@ -2,7 +2,7 @@ import streamlit as st
 from app.ui.components.page_header import page_header
 from app.ui.components.frayer import render_frayer_model
 from app.ui.components.buttons import wordversion_details_button
-from app.core.respositories.words_repo import get_word_version_by_id
+from app.core.repositories.words_repo import get_word_version_by_id
 
 PAGE_TITLE = "About"
 EXAMPLE_WORD_ID = 4  # concatenation

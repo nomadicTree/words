@@ -1,6 +1,6 @@
 import streamlit as st
 from app.services.search.search_models import SearchHit, SearchFilters
-from app.core.respositories.search_repo import search_raw
+from app.core.repositories.search_repo import search_raw
 from app.core.db import get_db
 
 

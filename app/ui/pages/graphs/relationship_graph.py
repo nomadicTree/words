@@ -1,11 +1,11 @@
 import streamlit as st
 
-from app.core.respositories.word_graph_repo import (
+from app.core.repositories.word_graph_repo import (
     load_words_and_rels,
     load_word_levels,
     load_word_courses,
 )
-from app.core.respositories.courses_repo import get_courses
+from app.core.repositories.courses_repo import get_courses
 from app.ui.components.selection_helpers import select_course
 from app.ui.pages.graphs.graph_filters import filter_words
 from app.ui.pages.graphs.graph_builder import build_graph

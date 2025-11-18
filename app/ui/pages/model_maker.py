@@ -5,8 +5,8 @@ from app.ui.components.selection_helpers import select_courses
 from app.ui.components.page_header import page_header
 from app.ui.components.frayer import render_frayer_model
 from app.core.utils.strings import build_wordversion_filename
-from app.core.respositories.courses_repo import get_courses
-from app.core.respositories.topics_repo import get_topics_for_course
+from app.core.repositories.courses_repo import get_courses
+from app.core.repositories.topics_repo import get_topics_for_course
 from app.core.models.topic_model import Topic
 from app.core.models.word_models import WordVersion
 
