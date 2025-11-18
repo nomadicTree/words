@@ -10,11 +10,13 @@ PAGE_TITLE = "Course Glossary"
 
 
 def main():
+    page_header(PAGE_TITLE)
     all_courses = get_courses()
     with st.sidebar:
         course = select_course(all_courses)
-
-    page_header(PAGE_TITLE)
+    if course is None:
+        st.error("No course selected—this is unexpected!")
+        st.stop()
 
     course_word_versions = get_word_versions_for_course(course)
     course_word_versions.sort()
