@@ -90,7 +90,7 @@ def select_many(
 ):
     """
     Multi-select selector for Model Maker.
-    - prefix="global" means: URL only initialises state; session is authoritative.
+    - prefix="global": URL only initialises on first load; session dominates.
     - Stores slugs, not PKs.
     """
 
@@ -111,22 +111,18 @@ def select_many(
     else:
         query_slugs = []
 
-    original_slugs = st.session_state.get(session_key)
-
     # 1. INITIALISE session state
+    original_slugs = st.session_state.get(session_key)
     if original_slugs is None:
+        # only on first load
         valid_slugs = [s for s in query_slugs if s in slug_map]
         st.session_state[session_key] = valid_slugs
-        st.session_state[session_key] = []
         original_slugs = valid_slugs
 
+    # 2. Remove stale slugs
     cleaned_slugs = [s for s in original_slugs if s in slug_map]
     st.session_state[session_key] = cleaned_slugs
-    selected_slugs = st.session_state[session_key]
-
-    # 2. Remove stale slugs
-    selected_slugs = [s for s in selected_slugs if s in slug_map]
-    st.session_state[session_key] = selected_slugs
+    selected_slugs = cleaned_slugs
 
     selected_objs = [slug_map[s] for s in selected_slugs]
 
@@ -139,14 +135,10 @@ def select_many(
         key=f"{prefix}_{key}_widget",
     )
 
-    # 4. Widget → session
+    # 4. Widget → session (NO query-param sync)
     new_slugs = [i.slug for i in selected_from_widget]
     if set(new_slugs) != set(selected_slugs):
         st.session_state[session_key] = new_slugs
-
-        # Update URL only for prefix='global'
-        if prefix == "global":
-            st.query_params[key] = ",".join(new_slugs)
 
     return selected_from_widget
 
