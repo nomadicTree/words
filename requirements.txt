@@ -1,1 +1,2 @@
 pyyaml
+extra_streamlit_components
