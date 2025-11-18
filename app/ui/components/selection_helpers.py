@@ -22,12 +22,6 @@ def select_one(
     prefix: str = "global",
     default_item=None,
 ):
-    """
-    Single-select version aligned with select_items():
-    - prefix="global": URL only initializes once; then session dominates.
-    - prefix="view": ignores query params entirely.
-    - Stores slugs, not PKs.
-    """
     if not items:
         st.warning(f"No options available for '{label}'.")
         return None
@@ -35,13 +29,13 @@ def select_one(
     slug_map = {item.slug: item for item in items}
     session_key = f"{prefix}_{key}"
 
-    # --- STEP 1: qp only used on first load (global)
+    # STEP 1: Read query param only for first-load initialization
     qp_slug = None
     if prefix == "global":
         qp = st.query_params.get(key)
         qp_slug = qp[0] if isinstance(qp, list) else qp
 
-    # --- STEP 2: initialise session
+    # STEP 2: Initialise session state
     if session_key not in st.session_state:
         if qp_slug in slug_map:
             st.session_state[session_key] = qp_slug
@@ -52,18 +46,24 @@ def select_one(
 
     selected_slug = st.session_state[session_key]
 
-    # --- STEP 3: clean stale
+    # STEP 3: First-load initial sync (qp empty)
+    if prefix == "global":
+        current = st.query_params.get(key)
+        if not current:  # covers None, [], ''
+            _sync_global_qp(key, selected_slug)
+
+    # STEP 4: Stale cleanup (parent changed → this widget's selection invalid)
     if selected_slug not in slug_map:
         selected_slug = default_item.slug if default_item else items[0].slug
         st.session_state[session_key] = selected_slug
 
-    selected_obj = slug_map[selected_slug]
-    if prefix == "global":
-        current = st.query_params.get(key)
-        if current is None:  # only on first load
+        # Sync URL since widget did not fire an event
+        if prefix == "global":
             _sync_global_qp(key, selected_slug)
 
-    # --- STEP 4: render widget
+    selected_obj = slug_map[selected_slug]
+
+    # STEP 5: Render the widget
     selected_from_widget = st.selectbox(
         label,
         items,
@@ -74,7 +74,7 @@ def select_one(
 
     new_slug = selected_from_widget.slug
 
-    # Sync query params with session state on first load if they are absent
+    # STEP 6: Widget-change sync
     if new_slug != selected_slug:
         st.session_state[session_key] = new_slug
         if prefix == "global":
