@@ -15,55 +15,45 @@ def _sync_global_qp(key, value):
         st.query_params[key] = value
 
 
-def select_one(
-    items: list,
-    key: str,
-    label: str,
-    prefix: str = "global",
-    default_item=None,
-):
+def select_one(items, key, label, prefix="global", default_item=None):
     if not items:
-        st.warning(f"No options available for '{label}'.")
+        st.warning(f"No options for '{label}'.")
         return None
 
     slug_map = {item.slug: item for item in items}
     session_key = f"{prefix}_{key}"
 
-    # STEP 1: Read query param only for first-load initialization
-    qp_slug = None
-    if prefix == "global":
-        qp = st.query_params.get(key)
-        qp_slug = qp[0] if isinstance(qp, list) else qp
-
-    # STEP 2: Initialise session state
+    # --- STEP 1: initialisation from qp (global only)
     if session_key not in st.session_state:
-        if qp_slug in slug_map:
-            st.session_state[session_key] = qp_slug
-        elif default_item:
-            st.session_state[session_key] = default_item.slug
+        if prefix == "global":
+            qp = st.query_params.get(key)
+            qp_slug = qp[0] if isinstance(qp, list) else qp
+
+            # qp wins if valid
+            if qp_slug in slug_map:
+                st.session_state[session_key] = qp_slug
+            # otherwise fallback
+            elif default_item:
+                st.session_state[session_key] = default_item.slug
+            else:
+                st.session_state[session_key] = items[0].slug
         else:
-            st.session_state[session_key] = items[0].slug
+            # prefix="view": ignore qp entirely
+            if default_item:
+                st.session_state[session_key] = default_item.slug
+            else:
+                st.session_state[session_key] = items[0].slug
 
     selected_slug = st.session_state[session_key]
 
-    # STEP 3: First-load initial sync (qp empty)
-    if prefix == "global":
-        current = st.query_params.get(key)
-        if not current:  # covers None, [], ''
-            _sync_global_qp(key, selected_slug)
-
-    # STEP 4: Stale cleanup (parent changed → this widget's selection invalid)
+    # --- STEP 2: stale cleanup
     if selected_slug not in slug_map:
         selected_slug = default_item.slug if default_item else items[0].slug
         st.session_state[session_key] = selected_slug
 
-        # Sync URL since widget did not fire an event
-        if prefix == "global":
-            _sync_global_qp(key, selected_slug)
-
     selected_obj = slug_map[selected_slug]
 
-    # STEP 5: Render the widget
+    # --- STEP 3: widget
     selected_from_widget = st.selectbox(
         label,
         items,
@@ -72,13 +62,8 @@ def select_one(
         key=f"{prefix}_{key}_widget",
     )
 
-    new_slug = selected_from_widget.slug
-
-    # STEP 6: Widget-change sync
-    if new_slug != selected_slug:
-        st.session_state[session_key] = new_slug
-        if prefix == "global":
-            _sync_global_qp(key, new_slug)
+    # update session state
+    st.session_state[session_key] = selected_from_widget.slug
 
     return selected_from_widget
 
