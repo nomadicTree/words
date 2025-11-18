@@ -31,7 +31,6 @@ def select_one(
     slug_map = {item.slug: item for item in items}
     session_key = f"{prefix}_{key}"
     cookie_key = f"fs_{prefix}_{key}"
-
     # --- STEP 1: initialise from COOKIE (first load only)
     if session_key not in st.session_state:
         saved = cookie_manager.get(cookie_key)
@@ -49,7 +48,7 @@ def select_one(
             st.session_state[session_key],
             key=f"{cookie_key}_set_init",
         )
-
+        st.rerun()
     selected_slug = st.session_state[session_key]
 
     # --- STEP 2: stale cleanup
@@ -128,7 +127,7 @@ def select_many(items, key, label, prefix="global"):
             ",".join(st.session_state[session_key]),
             key=f"{cookie_key}_set_init",
         )
-
+        st.rerun()
     # --- STEP 2: stale cleanup
     selected_slugs = [s for s in st.session_state[session_key] if s in slug_map]
     st.session_state[session_key] = selected_slugs
