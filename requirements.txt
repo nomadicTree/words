@@ -1,2 +1,3 @@
 pyyaml
 extra_streamlit_components
+streamlit_agraph
