@@ -24,12 +24,12 @@ pages = {
             title="Course Glossary",
             icon="📖",
         ),
-        st.Page(PAGES_DIR / "view.py", title="Model Viewer", icon="🪟"),
         st.Page(
             PAGES_DIR / "graphs" / "relationship_graph.py",
             title="Relationship Graph",
             icon="👬",
         ),
+        st.Page(PAGES_DIR / "view.py", title="Model Viewer", icon="🪟"),
     ],
     "Info": [
         st.Page(PAGES_DIR / "about.py", title="About", icon="ℹ️"),
