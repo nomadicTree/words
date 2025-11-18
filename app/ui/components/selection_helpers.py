@@ -5,18 +5,14 @@ from app.core.models.subject_model import Subject
 
 
 def _sync_global_qp(key, value):
-    guard_key = f"qp_sync_guard_{key}"
+    # Normalize comparison because st.query_params may return list
+    current = st.query_params.get(key)
+    if isinstance(current, list):
+        current = current[0] if current else None
 
-    # Skip if this run already handled the sync
-    if st.session_state.get(guard_key):
-        st.session_state[guard_key] = False
-        return
-
-    # Only update & rerun when necessary
-    if st.query_params.get(key) != value:
+    # Only update when actually different
+    if current != value:
         st.query_params[key] = value
-        st.session_state[guard_key] = True
-        st.rerun()
 
 
 def select_one(
@@ -61,13 +57,13 @@ def select_one(
         selected_slug = default_item.slug if default_item else items[0].slug
         st.session_state[session_key] = selected_slug
 
-    # --- STEP 4: sync session → query params FIRST
-    if prefix == "global":
-        _sync_global_qp(key, selected_slug)
-
     selected_obj = slug_map[selected_slug]
+    if prefix == "global":
+        current = st.query_params.get(key)
+        if current is None:  # only on first load
+            _sync_global_qp(key, selected_slug)
 
-    # --- STEP 5: render widget
+    # --- STEP 4: render widget
     selected_from_widget = st.selectbox(
         label,
         items,
@@ -78,6 +74,7 @@ def select_one(
 
     new_slug = selected_from_widget.slug
 
+    # Sync query params with session state on first load if they are absent
     if new_slug != selected_slug:
         st.session_state[session_key] = new_slug
         if prefix == "global":
