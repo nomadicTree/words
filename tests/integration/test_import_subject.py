@@ -1,6 +1,6 @@
 import pytest
-from src.frayerstore.importer.import_subjects import import_subject
-from src.frayerstore.importer.exceptions import (
+from frayerstore.importer.import_subjects import import_subject
+from frayerstore.importer.exceptions import (
     SubjectImportError,
     SubjectImportCollision,
 )
