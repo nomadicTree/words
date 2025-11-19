@@ -16,3 +16,9 @@ class InvalidYamlStructure(ImporterError):
 
 class SubjectImportError(ImporterError):
     pass
+
+
+class SubjectImportCollision(ImporterError):
+    """Raised when attempting to import a subject that conflicts with an existing subject."""
+
+    pass
