@@ -1,5 +1,0 @@
-subjects:
-  - name: Computing
-    courses:
-      - file: computing/courses/ocr_j277.yaml
-      - file: computing/courses/ocr_h446.yaml
