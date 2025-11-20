@@ -3,9 +3,9 @@ from dataclasses import dataclass
 from typing import Optional
 from enum import StrEnum, auto
 import sqlite3
-from frayerstore.importer.exceptions import ImporterError
-from frayerstore.importer.models import ImportItem
-from frayerstore.importer.report import ImportStageReport
+from .exceptions import ImporterError
+from .models import ImportItem
+from .report import ImportStageReport
 
 
 class ImportDecision(StrEnum):
