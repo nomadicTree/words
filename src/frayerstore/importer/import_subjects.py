@@ -28,5 +28,5 @@ def import_subject(
         existing_by_slug=existing_by_slug,
         existing_by_name=existing_by_name,
         stage_report=report.subjects,
-        error_type=SubjectImportCollision,
+        exception_type=SubjectImportCollision,
     )
