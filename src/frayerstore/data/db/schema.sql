@@ -33,7 +33,7 @@ CREATE TABLE Words (
     name TEXT NOT NULL,
     subject_id INTEGER NOT NULL REFERENCES Subjects(id),
     slug TEXT NOT NULL,
-    UNIQUE(word, subject_id),
+    UNIQUE(name, subject_id),
     UNIQUE(subject_id, slug)
 );
 
