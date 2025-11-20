@@ -2,7 +2,7 @@ import sqlite3
 from pathlib import Path
 from .yaml_utils import load_yaml
 from .exceptions import SubjectImportError, SubjectImportCollision
-from .db_utils import get_subject_by_name, get_subject_by_slug
+from .db import get_subject_by_name, get_subject_by_slug
 from .models import ImportSubject
 from .report import ImportReport
 from .identity import import_with_identity

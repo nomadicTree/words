@@ -45,7 +45,7 @@ class ImportSubject(ImportItem):
 
     @classmethod
     def create_in_db(cls, conn: sqlite3.Row, incoming: ImportSubject) -> ImportSubject:
-        from .db_utils import insert_subject
+        from .db import insert_subject
 
         new_id = insert_subject(conn, incoming)
         return incoming.with_id(new_id)
