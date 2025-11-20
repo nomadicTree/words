@@ -4,10 +4,9 @@ from abc import ABC, abstractmethod
 import sqlite3
 from frayerstore.core.utils import slugify
 from .exceptions import InvalidYamlStructure
-from .db_utils import insert_subject
 
 
-@dataclass
+@dataclass(frozen=True)
 class ImportItem(ABC):
     id: int | None
     name: str
@@ -46,5 +45,7 @@ class ImportSubject(ImportItem):
 
     @classmethod
     def create_in_db(cls, conn: sqlite3.Row, incoming: ImportSubject) -> ImportSubject:
+        from .db_utils import insert_subject
+
         new_id = insert_subject(conn, incoming)
         return incoming.with_id(new_id)
