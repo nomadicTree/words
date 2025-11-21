@@ -1,8 +1,6 @@
 import pytest
-from frayerstore.importer.import_subjects import import_subject
-from frayerstore.importer.exceptions import (
-    SubjectImportCollision,
-)
+from frayerstore.importer.subjects import import_subject
+from frayerstore.importer.exceptions import SubjectImportCollision
 from frayerstore.importer.report import ImportReport
 
 
@@ -18,6 +16,9 @@ def test_import_single_subject(schema_db, subjects_path):
     assert row["slug"] == "computing"
     count = schema_db.execute("SELECT COUNT(*) FROM Subjects").fetchone()[0]
     assert count == 1
+    assert len(report.subjects.created) == 1
+    assert len(report.subjects.skipped) == 0
+    assert len(report.subjects.errors) == 0
 
 
 def test_import_multiple_subjects(schema_db, tmp_path):
@@ -35,6 +36,9 @@ def test_import_multiple_subjects(schema_db, tmp_path):
     assert len(rows) == 2
     names = {r["name"] for r in rows}
     assert names == {"Computing", "Maths"}
+    assert len(report.subjects.created) == 2
+    assert len(report.subjects.skipped) == 0
+    assert len(report.subjects.errors) == 0
 
 
 def test_subject_name_collision(schema_db, tmp_path):
@@ -49,7 +53,9 @@ def test_subject_name_collision(schema_db, tmp_path):
     import_subject(schema_db, b, report)
     rows = schema_db.execute("SELECT * FROM Subjects").fetchall()
     assert len(rows) == 1
+    assert len(report.subjects.created) == 1
     assert len(report.subjects.skipped) == 1
+    assert len(report.subjects.errors) == 0
 
 
 def test_subject_slug_is_derived(schema_db, tmp_path):
@@ -94,3 +100,9 @@ def test_slug_collision(schema_db, tmp_path):
     import_subject(schema_db, a, report)
     with pytest.raises(SubjectImportCollision):
         import_subject(schema_db, b, report)
+
+    rows = schema_db.execute("SELECT * FROM Subjects").fetchall()
+    assert len(rows) == 1
+    assert len(report.subjects.created) == 1
+    assert len(report.subjects.skipped) == 0
+    assert len(report.subjects.errors) == 1
