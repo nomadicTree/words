@@ -2,9 +2,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Optional
 from enum import StrEnum, auto
-from .exceptions import ImporterError
-from .models import ImportItem
-from .report import ImportStageReport
+from frayerstore.importer.exceptions import ImporterError
+from frayerstore.importer.dto.import_item import ImportItem
+from frayerstore.importer.report import ImportStageReport
 from frayerstore.models.domain_entity import DomainEntity
 
 
@@ -17,7 +17,7 @@ class ImportDecision(StrEnum):
 @dataclass
 class IdentityResolutionResult:
     decision: ImportDecision
-    existing: Optional[ImportItem] = None
+    existing: Optional[DomainEntity] = None
     error: Optional[str] = None
 
 
@@ -76,7 +76,7 @@ def handle_resolution(
     resolution: IdentityResolutionResult,
     exception_type: type[ImporterError],
     stage_report: ImportStageReport,
-) -> ImportItem | None:
+) -> DomainEntity | None:
     if resolution.decision == ImportDecision.ERROR:
         stage_report.record_error(resolution.error)
         raise exception_type(resolution.error)
