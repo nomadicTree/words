@@ -3,6 +3,7 @@ import sqlite3
 from pathlib import Path
 from frayerstore.importer.report import ImportReport, ImportStageReport
 from frayerstore.importer.exceptions import SubjectImportError
+from frayerstore.core.config import SCHEMA_PATH
 
 
 @pytest.fixture
@@ -19,9 +20,7 @@ def schema_db(empty_db):
     """
     A fresh in-memory DB with the full schema loaded.
     """
-    import frayerstore.paths as paths
-
-    schema_sql = (paths.DB_DIR / "schema.sql").read_text()
+    schema_sql = SCHEMA_PATH.read_text()
     empty_db.executescript(schema_sql)
     return empty_db
 
