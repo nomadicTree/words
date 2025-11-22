@@ -48,7 +48,7 @@ class Settings:
 
 @lru_cache
 def load_settings() -> Settings:
-    """Load settings to Settings object"""
+    """Load settings.toml to Settings object"""
     with CONFIG_PATH.open("rb") as f:
         raw = tomllib.load(f)
 
