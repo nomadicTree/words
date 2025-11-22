@@ -37,9 +37,9 @@ class SQLiteLevelRepository(LevelRepository):
     def create(self, data: LevelCreate) -> Level:
         params = self.mapper.create_to_params(data)
         q = """
-        INSERT INTO Levels (name, slug, category, number)
-        VALUES (?, ?, ?, ?)
-        RETURNING id, name, slug, category, number
+        INSERT INTO Levels (name, slug)
+        VALUES (?, ?)
+        RETURNING id, name, slug
         """
         row = self.conn.execute(q, params).fetchone()
         return self.mapper.row_to_domain(row)

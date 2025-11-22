@@ -30,13 +30,19 @@ def repo(conn, mapper):
 
 
 # Helper: insert a row manually for testing lookups
-def insert_row(conn, *, name, slug, category, number):
+def insert_row(conn, *, name, slug):
     q = """
-    INSERT INTO Levels (name, slug, category, number)
-    VALUES (?, ?, ?, ?)
-    RETURNING id, name, slug, category, number
+    INSERT INTO Levels (name, slug)
+    VALUES (?, ?)
+    RETURNING id, name, slug
     """
-    return conn.execute(q, (name, slug, category, number)).fetchone()
+    return conn.execute(
+        q,
+        (
+            name,
+            slug,
+        ),
+    ).fetchone()
 
 
 # ---------------------------------------------------------------------------
@@ -46,10 +52,8 @@ def insert_row(conn, *, name, slug, category, number):
 
 def test_create_inserts_row_and_returns_domain(conn, repo, mapper):
     data = LevelCreate(
-        name="Key Stage 4",
+        name="KS4",
         slug="ks4",
-        category="Key Stage",
-        number="4",
     )
 
     created = repo.create(data)
@@ -57,7 +61,7 @@ def test_create_inserts_row_and_returns_domain(conn, repo, mapper):
     # Check row exists in DB
     row = conn.execute("SELECT * FROM Levels WHERE slug='ks4'").fetchone()
     assert row is not None
-    assert row["name"] == "Key Stage 4"
+    assert row["name"] == "KS4"
 
     # Check mapper returned a Level instance
     assert isinstance(created, Level)
@@ -73,11 +77,11 @@ def test_create_uses_mapper_to_generate_params(repo, mapper, conn, monkeypatch):
 
     def fake_params(data):
         called["params"] = True
-        return ("A", "a", "Cat", "1")
+        return ("A", "a")
 
     monkeypatch.setattr(mapper, "create_to_params", fake_params)
 
-    data = LevelCreate(name="X", slug="x", category="C", number="1")
+    data = LevelCreate(name="X", slug="x")
     repo.create(data)
 
     assert called.get("params", False) is True
@@ -89,13 +93,7 @@ def test_create_uses_mapper_to_generate_params(repo, mapper, conn, monkeypatch):
 
 
 def test_get_by_slug_finds_row(repo, conn):
-    row = insert_row(
-        conn,
-        name="Key Stage 4",
-        slug="ks4",
-        category="Key Stage",
-        number="4",
-    )
+    row = insert_row(conn, name="KS4", slug="ks4")
 
     level = repo.get_by_slug("ks4")
     assert isinstance(level, Level)
@@ -115,16 +113,14 @@ def test_get_by_slug_returns_none_if_not_found(repo):
 def test_get_by_name_finds_row(repo, conn):
     row = insert_row(
         conn,
-        name="Key Stage 5",
+        name="KS5",
         slug="ks5",
-        category="Key Stage",
-        number="5",
     )
 
-    level = repo.get_by_name("Key Stage 5")
+    level = repo.get_by_name("KS5")
     assert isinstance(level, Level)
     assert level.pk == row["id"]
-    assert level.name == "Key Stage 5"
+    assert level.name == "KS5"
 
 
 def test_get_by_name_returns_none_if_not_found(repo):
@@ -139,10 +135,8 @@ def test_get_by_name_returns_none_if_not_found(repo):
 def test_get_by_id_finds_row(repo, conn):
     row = insert_row(
         conn,
-        name="Year 12",
+        name="Y12",
         slug="y12",
-        category="Year",
-        number="12",
     )
 
     level = repo.get_by_id(row["id"])

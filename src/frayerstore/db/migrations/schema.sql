@@ -7,10 +7,7 @@ CREATE TABLE Subjects (
 CREATE TABLE Levels (
     id INTEGER PRIMARY KEY,
     name TEXT NOT NULL UNIQUE,
-    slug TEXT NOT NULL UNIQUE,
-    category TEXT NOT NULL,
-    number TEXT NOT NULL,
-    UNIQUE(category, number)
+    slug TEXT NOT NULL UNIQUE
 );
 
 CREATE TABLE Courses (

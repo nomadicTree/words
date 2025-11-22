@@ -5,5 +5,3 @@ from dataclasses import dataclass
 class LevelCreate:
     name: str
     slug: str
-    category: str
-    number: str

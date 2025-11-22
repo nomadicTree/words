@@ -8,13 +8,18 @@ from frayerstore.importer.dto.import_item import ImportItem
 
 
 @dataclass(frozen=True)
-class ImportLevel(ImportItem):
+class ImportCourse(ImportItem):
+    name: str
+    subject_slug: str
+    level_slug: str
+    number: str
+
     @classmethod
-    def from_yaml(cls, data: dict) -> ImportLevel:
-        required_fields = ["name"]
+    def from_yaml(cls, data: dict) -> ImportCourse:
+        required_fields = ["name", "subject", "level", "topics"]
 
         for field in required_fields:
-            message = missing_required_field_message("Level", field)
+            message = missing_required_field_message("Course", field)
             value = data.get(field)
             if value is None:
                 raise InvalidYamlStructure(message)
@@ -26,6 +31,7 @@ class ImportLevel(ImportItem):
                 raise InvalidYamlStructure(message)
 
         name = str(data["name"]).strip()
-        slug = slugify(name)
+        subject = str(data["subject"]).strip()
+        level = str(data["level"]).strip()
 
-        return cls(name=name, slug=slug)
+        return cls(name=full_name, slug=slug, category=category, number=number)
