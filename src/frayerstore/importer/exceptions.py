@@ -16,3 +16,7 @@ class InvalidYamlStructure(ImporterError):
 
 class SubjectImportError(ImporterError):
     pass
+
+
+class LevelImportError(ImporterError):
+    pass
