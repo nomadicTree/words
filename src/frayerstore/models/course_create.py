@@ -1,11 +1,9 @@
 from dataclasses import dataclass
-from frayerstore.models.subject import Subject
-from frayerstore.models.level import Level
 
 
 @dataclass(frozen=True)
-class Course:
+class CourseCreate:
     name: str
     slug: str
-    subject: Subject
-    level: Level
+    subject_pk: int
+    level_pk: int

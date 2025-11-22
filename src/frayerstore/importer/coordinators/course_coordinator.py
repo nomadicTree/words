@@ -1,8 +1,8 @@
 from frayerstore.importer.exceptions import InvalidYamlStructure
-from frayerstore.importer.dto.import_level import ImportCourse
+from frayerstore.importer.dto.import_course import ImportCourse
 
-from frayerstore.importer.services.generic_import_service import GenericImportService
-from frayerstore.importer.services.topic_import_coordinator import (
+from frayerstore.importer.services.import_services import CourseImportService
+from frayerstore.importer.coordinators.topic_coordinator import (
     TopicImportCoordinator,
 )
 
@@ -10,13 +10,13 @@ from frayerstore.importer.services.topic_import_coordinator import (
 class CourseImportCoordinator:
     def __init__(
         self,
-        course_service: GenericImportService,
+        course_service: CourseImportService,
         topic_coordinator: TopicImportCoordinator,
     ):
         self.course_service = course_service
         self.topic_coordinator = topic_coordinator
 
-    def import_course(self, data: dict, level_pk: int, report):
+    def import_course(self, data: dict, subject_pk: int, level_pk: int, report):
         incoming = ImportCourse.from_yaml(data, level_pk=level_pk)
         course = self.course_service.import_item(incoming, report.courses)
 
