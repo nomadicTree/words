@@ -35,7 +35,7 @@ class SQLiteSubjectRepository(SubjectRepository):
         return self.mapper.row_to_domain(row) if row else None
 
     def create(self, data: SubjectCreate) -> Subject:
-        params = self.mapper.domain_to_params(data)
+        params = self.mapper.create_to_params(data)
         q = """
         INSERT INTO Subjects (name, slug)
         VALUES (?, ?)

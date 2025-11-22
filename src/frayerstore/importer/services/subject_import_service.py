@@ -49,7 +49,7 @@ class SubjectImportService:
 
         # CREATE path
         candidate = SubjectCreate(name=incoming.name, slug=incoming.slug)
-        created = self.repo.save(candidate)
+        created = self.repo.create(candidate)
         stage_report.record_created(created)
 
         return created
