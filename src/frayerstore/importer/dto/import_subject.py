@@ -1,8 +1,8 @@
 from __future__ import annotations
 from dataclasses import dataclass
-from frayerstore.importer.exceptions import InvalidYamlStructure
 from frayerstore.core.utils.slugify import slugify
-from .import_item import ImportItem
+from frayerstore.importer.exceptions import InvalidYamlStructure
+from frayerstore.importer.dto.import_item import ImportItem
 
 
 @dataclass(frozen=True)
