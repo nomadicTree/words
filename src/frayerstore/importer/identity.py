@@ -2,7 +2,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Optional
 from enum import StrEnum, auto
-import sqlite3
 from .exceptions import ImporterError
 from .models import ImportItem
 from .report import ImportStageReport
@@ -90,29 +89,3 @@ def handle_resolution(
         return resolution.existing
 
     return None
-
-
-def import_with_identity(
-    conn: sqlite3.Connection,
-    incoming: ImportItem,
-    *,
-    existing_by_slug: ImportItem | None,
-    existing_by_name: ImportItem | None,
-    stage_report: ImportStageReport,
-    exception_type: type[ImporterError],
-):
-    resolution = resolve_identity(
-        incoming,
-        existing_by_slug,
-        existing_by_name,
-    )
-
-    existing = handle_resolution(resolution, exception_type, stage_report)
-
-    if existing:
-        return existing
-
-    # Need to write new row
-    new_obj = incoming.__class__.create_in_db(conn, incoming)
-    stage_report.record_created(new_obj)
-    return new_obj

@@ -2,7 +2,7 @@ import pytest
 import sqlite3
 from pathlib import Path
 from frayerstore.importer.report import ImportReport, ImportStageReport
-from frayerstore.importer.exceptions import SubjectImportCollision
+from frayerstore.importer.exceptions import SubjectImportError
 
 
 @pytest.fixture
@@ -51,4 +51,4 @@ def stage_report():
 @pytest.fixture
 def subject_exception():
     """The exception that should be raised by subject importer tests."""
-    return SubjectImportCollision
+    return SubjectImportError
