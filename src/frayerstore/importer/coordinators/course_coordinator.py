@@ -17,7 +17,9 @@ class CourseImportCoordinator:
         self.topic_coordinator = topic_coordinator
 
     def import_course(self, data: dict, subject_pk: int, level_pk: int, report):
-        incoming = ImportCourse.from_yaml(data, level_pk=level_pk)
+        incoming = ImportCourse.from_yaml(
+            data, subject_pk=subject_pk, level_pk=level_pk
+        )
         course = self.course_service.import_item(incoming, report.courses)
 
         topics_raw = data.get("topics", [])
@@ -26,3 +28,5 @@ class CourseImportCoordinator:
 
         for topic_raw in topics_raw:
             self.topic_coordinator.import_topic(topic_raw, course.pk, report)
+
+        return course

@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 
 @dataclass(frozen=True)
-class Topic:
+class TopicCreate:
     code: str
     name: str
     slug: str

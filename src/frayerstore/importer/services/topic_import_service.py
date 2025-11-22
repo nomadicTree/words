@@ -1,7 +1,7 @@
 from frayerstore.core.utils.slugify import slugify
 from frayerstore.importer.dto.import_topic import ImportTopic
 from frayerstore.importer.exceptions import TopicImportError
-from frayerstore.importer.dto import TopicCreate
+from frayerstore.models.topic_create import TopicCreate
 
 
 class TopicImportService:

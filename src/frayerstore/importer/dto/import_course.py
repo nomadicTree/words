@@ -8,6 +8,7 @@ from frayerstore.importer.dto.import_item import ImportItem
 
 @dataclass(frozen=True)
 class ImportCourse(ImportItem):
+    subject_pk: int
     level_pk: int
 
     @classmethod

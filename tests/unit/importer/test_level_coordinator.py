@@ -32,8 +32,8 @@ class FakeCourseCoordinator:
     def __init__(self):
         self.calls = []
 
-    def import_course(self, data, level_pk, report):
-        self.calls.append((data, level_pk, report))
+    def import_course(self, data, subject_pk, level_pk, report):
+        self.calls.append((data, subject_pk, level_pk, report))
 
 
 # ----------------------------------------------------------------------
@@ -98,10 +98,11 @@ def test_level_import_coordinator_calls_service_and_imports_courses(
     # --- Assert: two course imports triggered ---
     assert len(course_coordinator.calls) == 2
 
-    # Each should have received the PK returned by FakeLevelService
+    # Each should have received the PK returned by FakeLevelService and subject PK
     for call in course_coordinator.calls:
-        (_, level_pk, _) = call
+        (_, subject_pk_passed, level_pk, _) = call
         assert level_pk == 999
+        assert subject_pk_passed == 10
 
     # Correct YAML passed to children
     assert course_coordinator.calls[0][0] == {"name": "GCSE CS"}

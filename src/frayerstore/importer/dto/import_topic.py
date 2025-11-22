@@ -1,5 +1,6 @@
 from __future__ import annotations
 from dataclasses import dataclass
+from frayerstore.core.utils.slugify import slugify
 from frayerstore.importer.exceptions import InvalidYamlStructure
 from frayerstore.importer.dto.import_item import ImportItem
 
@@ -21,9 +22,11 @@ class ImportTopic(ImportItem):
         name = data.get("name")
         if not isinstance(name, str) or not name.strip():
             raise InvalidYamlStructure("Topic missing required field 'name'")
+        name = name.strip()
 
         return cls(
             course_pk=course_pk,
             code=code.strip(),
-            name=name.strip(),
+            name=name,
+            slug=slugify(name),
         )

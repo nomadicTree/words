@@ -1,5 +1,5 @@
 from typing import Protocol
-from frayerstore.models.course import Topic
+from frayerstore.models.topic import Topic
 from frayerstore.models.topic_create import TopicCreate
 
 
