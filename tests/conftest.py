@@ -3,7 +3,7 @@ import sqlite3
 from pathlib import Path
 from frayerstore.importer.report import ImportReport, ImportStageReport
 from frayerstore.importer.exceptions import SubjectImportError
-from frayerstore.core.config import SCHEMA_PATH
+from frayerstore.core.config.paths import SCHEMA_PATH
 
 
 @pytest.fixture
