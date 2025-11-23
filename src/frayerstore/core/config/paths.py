@@ -9,9 +9,12 @@ PROJECT_ROOT = SRC_ROOT.parent
 
 DATA_DIR = PROJECT_ROOT / "data"
 DB_DIR = DATA_DIR / "db"
+DB_BACKUP_DIR = DB_DIR / "backups"
 YAML_DIR = DATA_DIR / "yaml"
 
 DB_PATH = DB_DIR / "frayerstore.sqlite3"
 CONFIG_PATH = PROJECT_ROOT / "config" / "settings.toml"
 
 SCHEMA_PATH = PACKAGE_ROOT / "db" / "migrations" / "schema.sql"
+
+SUBJECTS_YAML_PATH = YAML_DIR / "subjects.yaml"

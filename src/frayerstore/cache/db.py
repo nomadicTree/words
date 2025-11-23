@@ -1,9 +1,9 @@
 """Wrapper to cache DB connection"""
 
-import streamlit as st
-from frayerstore.core.db import get_db_uncached
-from frayerstore.settings import load_settings
 import sqlite3
+import streamlit as st
+from frayerstore.db.connection import get_db_uncached
+from frayerstore.core.config.settings import load_settings
 
 settings = load_settings()
 

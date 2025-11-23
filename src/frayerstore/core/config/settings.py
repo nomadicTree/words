@@ -3,7 +3,7 @@ from functools import lru_cache
 import tomllib
 import pandas as pd
 
-from frayerstore.paths import CONFIG_PATH
+from frayerstore.core.config.paths import CONFIG_PATH
 
 
 def parse_ttl(value: str | int | None) -> int | None:
@@ -45,10 +45,8 @@ class CacheSettings:
 class Settings:
     cache: CacheSettings
 
-
 @lru_cache
 def load_settings() -> Settings:
-    """Load settings.toml to Settings object"""
     with CONFIG_PATH.open("rb") as f:
         raw = tomllib.load(f)
 

@@ -1,5 +1,5 @@
-from src.frayerstore.core.config import SCHEMA_PATH, DB_PATH
-from src.frayerstore.core.db import open_db_at
+from src.frayerstore.core.config.paths import SCHEMA_PATH, DB_PATH
+from src.frayerstore.db.connection import open_db_at
 
 
 def main():
