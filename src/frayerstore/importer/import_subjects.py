@@ -71,7 +71,7 @@ def main():
     timestamp = time.strftime("%Y%m%d-%H%M%S")
 
     # Move original DB to backups/
-    archived_path = DB_BACKUP_DIR / f"frayerstore-{timestamp}.sqlite3"
+    archived_path = DB_BACKUP_DIR / f"frayerstore-{timestamp}.sqlite3.backup"
     shutil.move(DB_PATH, archived_path)
 
     # Create a fresh working copy
