@@ -13,7 +13,7 @@ class SQLiteSubjectRepository(SubjectRepository):
         self,
         conn: sqlite3.Connection,
         subject_mapper: SubjectMapper,
-        course_repo: CourseRepository,
+        course_repo: CourseRepository | None = None,
     ) -> SQLiteSubjectRepository:
         self.conn = conn
         self.subject_mapper = subject_mapper
@@ -54,6 +54,8 @@ class SQLiteSubjectRepository(SubjectRepository):
         subject = self.subject_mapper.row_to_domain(row)
 
         if include_courses:
+            if not self.course_repo:
+                raise ValueError("course_repo is required when include_courses=True")
             subject.courses = self.course_repo.get_for_subject(
                 subject.pk, include_topics=include_topics
             )
@@ -99,6 +101,8 @@ class SQLiteSubjectRepository(SubjectRepository):
         subjects = [self.subject_mapper.row_to_domain(r) for r in rows]
 
         if include_courses:
+            if not self.course_repo:
+                raise ValueError("course_repo is required when include_courses=True")
             for subject in subjects:
                 subject.courses = self.course_repo.get_for_subject(
                     subject.pk,
